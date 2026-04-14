@@ -218,20 +218,6 @@ function render() {
     };
 
     div.appendChild(img);
-    // if this source is a GIF, add a small badge indicator
-    try{
-      const isGif = /\.gif(\?.*)?$/i.test((item.src||''));
-      if (isGif) {
-        const badge = document.createElement('span');
-        badge.className = 'gif-badge';
-        badge.setAttribute('aria-hidden','true');
-        const dot = document.createElement('i'); dot.className = 'dot';
-        const label = document.createElement('span'); label.innerText = 'GIF';
-        badge.appendChild(dot);
-        badge.appendChild(label);
-        div.appendChild(badge);
-      }
-    }catch(e){}
     gallery.appendChild(div);
   });
 

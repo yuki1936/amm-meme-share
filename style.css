@@ -206,27 +206,7 @@ select#pageSize{ min-width:84px; }
 /* actions removed */
 
 /* GIF badge in bottom-left of thumbnail */
-.gif-badge {
-  position: absolute;
-  left: 8px;
-  bottom: 8px;
-  background: rgba(0,0,0,0.65);
-  color: #fff;
-  padding: 3px 6px;
-  font-size: 11px;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  z-index: 5;
-}
-.gif-badge .dot {
-  width: 8px;
-  height: 8px;
-  background: #ffcc00;
-  border-radius: 50%;
-  box-shadow: 0 0 0 2px rgba(255,204,0,0.12) inset;
-}
+.gif-badge { display: none !important; }
 
 /* 预览 */
 #viewer {
@@ -268,13 +248,7 @@ select#pageSize{ min-width:84px; }
 .viewer-controls .vc-download{ background: #fff; color: #111; border: 1px solid rgba(0,0,0,0.08); }
 
 /* When viewer is open, de-emphasize GIF badges so they look attached but subdued */
-.viewer-open .gif-badge {
-  opacity: 0.28;
-  pointer-events: none;
-  transform: translateY(2px) scale(0.98);
-  filter: grayscale(60%) brightness(0.6);
-  transition: opacity 160ms ease, transform 160ms ease, filter 160ms ease;
-}
+.viewer-open .gif-badge { display: none !important; }
 /* inline pagination inside header controls-right */
 .inline-pagination{
   display: flex;
