@@ -50,7 +50,6 @@ async function fetchBlob(url){
   try{
     const r = await fetch(encodePath(url), { credentials: 'same-origin', redirect: 'follow' });
     if (!r.ok) throw new Error('network');
-    // create and return a fresh blob from arrayBuffer so ClipboardItem can be reused multiple times
     const ab = await r.arrayBuffer();
     const headersType = r.headers.get('Content-Type') || '';
     const mimeGuess = headersType || undefined;
@@ -60,28 +59,7 @@ async function fetchBlob(url){
   }
 }
 
-// 下载图片（尝试通过 blob 以保留文件名，回退到直接打开链接）
-async function downloadImage(url){
-  const blob = await fetchBlob(url);
-  let filename = url.split('/').pop() || 'image';
-  try{ filename = decodeURIComponent(filename.replace(/\?.*$/,'')); }catch(e){}
-
-  if (blob) {
-    const u = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = u;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(u);
-  } else {
-    // fallback: open in new tab so user can save
-    window.open(encodePath(url), '_blank');
-  }
-}
-
-// 复制图片到剪贴板（优先），否则复制链接文本
+// 复制图片到剪贴板（只尝试写入剪贴板，不做下载或复制链接的回退）
 async function copyImage(url){
   try{
     const blob = await fetchBlob(url);
@@ -99,30 +77,10 @@ async function copyImage(url){
         const item = new ClipboardItem({ [mime]: blob });
         await navigator.clipboard.write([item]);
       }
-      return { ok: true, mode: 'image' };
+      return true;
     }
-  }catch(e){
-    // fallthrough to fallback below
-  }
-
-  // Fallback 1: try to trigger a download so user gets the file
-  try{
-    const a = document.createElement('a');
-    a.href = encodePath(url);
-    a.download = url.split('/').pop() || 'image';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    return { ok: false, mode: 'download' };
-  }catch(e){}
-
-  // Fallback 2: copy the URL text
-  try{
-    await navigator.clipboard.writeText(location.origin + '/' + encodePath(url));
-    return { ok:true, mode: 'text' };
-  }catch(e){
-    return { ok:false };
-  }
+  }catch(e){ /* ignore errors */ }
+  return false;
 }
 
 // 初始化
@@ -252,40 +210,13 @@ function render() {
       const full = encodePath(item.src);
       if (img.src !== full) img.src = full;
     };
-    // Single-click opens preview; copy is handled by the copy button
-    img.onclick = () => openViewer(item.src);
-
-    const actions = document.createElement("div");
-    actions.className = "actions";
-    const copyBtn = document.createElement("button");
-    copyBtn.className = 'copy-btn';
-    copyBtn.innerText = "复制";
-    copyBtn.title = "复制图片（优先复制图片到剪贴板，失败则下载或复制链接）";
-    copyBtn.onclick = async (e) => {
-      e.stopPropagation();
-      const res = await copyImage(item.src);
-      if (res && res.ok && res.mode === 'image') {
-        showToast('图片已复制到剪贴板');
-      } else if (res && res.mode === 'download') {
-        showToast('图片已开始下载，检查下载目录');
-      } else if (res && res.mode === 'text') {
-        showToast('已复制图片链接到剪贴板');
-      } else {
-        showToast('复制失败，请手动保存图片或链接');
-      }
+    // Single-click attempts to copy image to clipboard (with canvas fallback); double-click opens preview
+    img.onclick = async () => {
+      const ok = await tryCopyImage(item.src);
+      if (ok) showToast('图片已复制到剪贴板');
+      // silent on failure
     };
 
-    const dlBtn = document.createElement("button");
-    dlBtn.className = 'dl-btn';
-    dlBtn.innerText = "下载";
-    dlBtn.title = "下载图片";
-    dlBtn.onclick = async (e) => {
-      e.stopPropagation();
-      await downloadImage(item.src);
-    };
-
-    actions.appendChild(copyBtn);
-    actions.appendChild(dlBtn);
     div.appendChild(img);
     // if this source is a GIF, add a small badge indicator
     try{
@@ -301,8 +232,6 @@ function render() {
         div.appendChild(badge);
       }
     }catch(e){}
-
-    div.appendChild(actions);
     gallery.appendChild(div);
   });
 
@@ -402,6 +331,7 @@ function shuffle() {
   }
 }
 
+// downloadAll feature removed
 // 下载全部图片为 zip（使用 JSZip）
 async function downloadAll(){
   if (!window.JSZip) {
@@ -445,6 +375,9 @@ function openViewer(src) {
   viewerImgEl.src = encodePath(src);
   // show viewer
   viewerEl.style.display = 'flex';
+  ensureViewerControls();
+  // remember current viewed src for controls
+  viewerEl.dataset.current = src;
   try { document.body.classList.add('viewer-open'); } catch(e) {}
 
 
@@ -504,4 +437,104 @@ function showToast(text, timeout = 1400){
       setTimeout(()=> el.remove(), 220);
     }, timeout);
   }catch(e){ /* ignore */ }
+}
+
+// ensure viewer control buttons exist and bind events
+function ensureViewerControls(){
+  if (document.querySelector('.viewer-controls')) return;
+  const wrap = document.createElement('div');
+  wrap.className = 'viewer-controls';
+
+  const copyBtn = document.createElement('button');
+  copyBtn.className = 'vc-copy';
+  copyBtn.innerText = '复制';
+  copyBtn.title = '复制图片到剪贴板';
+  copyBtn.onclick = async (e)=>{
+    e.stopPropagation();
+    const src = viewerEl.dataset.current || viewerImgEl.src;
+    const ok = await tryCopyImage(src);
+    if (ok) showToast('图片已复制到剪贴板');
+    else showToast('复制不被支持或失败');
+  };
+
+  const dlBtn = document.createElement('button');
+  dlBtn.className = 'vc-download';
+  dlBtn.innerText = '下载';
+  dlBtn.title = '下载图片';
+  dlBtn.onclick = async (e)=>{
+    e.stopPropagation();
+    const src = viewerEl.dataset.current || viewerImgEl.src;
+    await downloadImageSingle(src);
+  };
+
+  wrap.appendChild(copyBtn);
+  wrap.appendChild(dlBtn);
+  document.body.appendChild(wrap);
+}
+
+// try copying image: fetch blob -> clipboard; fallback to canvas -> clipboard
+async function tryCopyImage(src){
+  try{
+    // try fetch & clipboard
+    const blob = await fetchBlob(src);
+    if (blob && navigator.clipboard && window.ClipboardItem){
+      const mime = blob.type || 'image/png';
+      const item = new ClipboardItem({ [mime]: blob });
+      await navigator.clipboard.write([item]);
+      return true;
+    }
+  }catch(e){ /* ignore */ }
+  // If this is an animated image (GIF/APNG/webp with animation), don't use canvas fallback
+  try{
+    const ext = (src.split('.').pop()||'').split('?')[0].toLowerCase();
+    const animatedExts = ['gif', 'apng', 'webp'];
+    if (animatedExts.includes(ext)) return false;
+  }catch(e){ }
+
+  // fallback: draw to canvas (works for same-origin static images) and copy
+  try{
+    const img = await loadImageForCanvas(src);
+    const c = document.createElement('canvas');
+    c.width = img.naturalWidth || img.width;
+    c.height = img.naturalHeight || img.height;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    const blob = await new Promise(res=> c.toBlob(res));
+    if (blob && navigator.clipboard && window.ClipboardItem){
+      const mime = blob.type || 'image/png';
+      const item = new ClipboardItem({ [mime]: blob });
+      await navigator.clipboard.write([item]);
+      return true;
+    }
+  }catch(e){ /* ignore */ }
+
+  return false;
+}
+
+function loadImageForCanvas(src){
+  return new Promise((resolve, reject)=>{
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = ()=> resolve(img);
+    img.onerror = reject;
+    img.src = encodePath(src);
+  });
+}
+
+// single image download helper (used by viewer)
+async function downloadImageSingle(url){
+  try{
+    const blob = await fetchBlob(url);
+    let filename = url.split('/').pop() || 'image';
+    try{ filename = decodeURIComponent(filename.replace(/\?.*$/,'')); }catch(e){}
+    if (blob){
+      const u = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = u; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(u);
+    } else {
+      window.open(encodePath(url), '_blank');
+    }
+  }catch(e){
+    console.error(e);
+  }
 }

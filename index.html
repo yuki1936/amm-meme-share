@@ -22,7 +22,7 @@
     </select>
 
     <button onclick="shuffle()">随机图片(</button>
-    <button id="downloadAll">全部下载(</button>
+      <button id="downloadAll">全部下载(</button>
     <div id="pagination" class="inline-pagination"></div>
     <button id="disclaimerBtn" class="note-btn" aria-label="免责声明">免责声明</button>
      <button id="darkToggle" class="dark-toggle" aria-label="切换深色模式" aria-pressed="false">🌙</button>
@@ -48,9 +48,9 @@
     </div>
   </div>
 
+<script src="script.js"></script>
 <!-- JSZip (via CDN) for creating zip archives client-side (open-source, MIT) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="script.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(()=>{});
