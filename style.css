@@ -179,7 +179,7 @@ select#pageSize{ min-width:84px; }
 
 /* Mobile adjustments: larger tap target and slightly taller topbar */
 @media (max-width: 600px) {
-  :root{ --topbar-height: 64px; }
+  :root{ --topbar-height: 72px; }
   body{ padding-top: var(--topbar-height); }
   .topbar h1{ font-size: 14px; }
   .brand-blue{ font-size: 28px; }
@@ -191,7 +191,7 @@ select#pageSize{ min-width:84px; }
 @media (max-width: 600px) {
   .topbar {
     padding: 8px 12px;
-    align-items: flex-start;
+    align-items: center;
   }
 
   /* Stack the centered block to flow naturally on small screens */
@@ -201,23 +201,25 @@ select#pageSize{ min-width:84px; }
     transform: none;
     width: 100%;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 8px;
-    align-items: stretch;
+    align-items: center;
+    justify-content: space-between;
     margin-top: 4px;
   }
 
-  .center-search { order: 1; width: 100%; }
+  .center-search { order: 1; flex: 1 1 60%; }
   .center-search input#search{ width: 100%; min-width: unset; max-width: 100%; }
 
-  .controls-right { order: 2; display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between; }
-  .controls-right > * { flex: 1 1 auto; }
+  .controls-right { order: 2; display: flex; gap: 8px; flex-wrap: nowrap; justify-content: flex-end; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .controls-right > * { flex: 0 0 auto; }
 
-  /* Make controls easier to tap */
+  /* Make controls easier to tap and keep labels on one line */
   .controls-right button, .controls-right select, .dark-toggle, .note-btn {
     padding: 10px 12px;
     font-size: 15px;
     border-radius: 10px;
+    white-space: nowrap;
   }
 
   /* Give the gallery more breathing room on small screens */
