@@ -50,7 +50,11 @@ async function fetchBlob(url){
   try{
     const r = await fetch(encodePath(url), { credentials: 'same-origin', redirect: 'follow' });
     if (!r.ok) throw new Error('network');
-    return await r.blob();
+    // create and return a fresh blob from arrayBuffer so ClipboardItem can be reused multiple times
+    const ab = await r.arrayBuffer();
+    const headersType = r.headers.get('Content-Type') || '';
+    const mimeGuess = headersType || undefined;
+    return new Blob([ab], { type: mimeGuess });
   }catch(e){
     return null;
   }
@@ -253,10 +257,10 @@ function render() {
 
     const actions = document.createElement("div");
     actions.className = "actions";
-
     const copyBtn = document.createElement("button");
+    copyBtn.className = 'copy-btn';
     copyBtn.innerText = "复制";
-    copyBtn.title = "复制图片（优先复制图片到剪贴板，失败则复制链接）";
+    copyBtn.title = "复制图片（优先复制图片到剪贴板，失败则下载或复制链接）";
     copyBtn.onclick = async (e) => {
       e.stopPropagation();
       const res = await copyImage(item.src);
@@ -272,6 +276,7 @@ function render() {
     };
 
     const dlBtn = document.createElement("button");
+    dlBtn.className = 'dl-btn';
     dlBtn.innerText = "下载";
     dlBtn.title = "下载图片";
     dlBtn.onclick = async (e) => {
