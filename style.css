@@ -57,7 +57,7 @@ body {
   display: inline-block;
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
-  padding: 6px 10px;
+  padding: 0;
   border-radius: 8px;
 }
 
@@ -176,23 +176,68 @@ select#pageSize{ min-width:84px; }
 @media (max-width: 1200px) { #gallery { grid-template-columns: repeat(6, 1fr); } }
 @media (max-width: 900px) { #gallery { grid-template-columns: repeat(4, 1fr); } }
 @media (max-width: 600px) { #gallery { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { #gallery { grid-template-columns: repeat(5, 1fr); } }
 
 /* Mobile adjustments: larger tap target and slightly taller topbar */
 @media (max-width: 600px) {
-  :root{ --topbar-height: 72px; }
+  :root{ --topbar-height: 88px; }
   body{ padding-top: var(--topbar-height); }
-  .topbar h1{ font-size: 14px; }
-  .brand-blue{ font-size: 28px; }
-  #brand{ padding: 10px 14px; }
+  .topbar h1{ font-size: 16px; }
+  .brand-blue{ font-size: 30px; }
+  #brand{ padding: 0; }
   .center-search { left: 50%; transform: translateX(-50%); }
 }
 
 /* Mobile layout improvements */
 @media (max-width: 600px) {
   .topbar {
-    padding: 8px 12px;
+    padding: 12px 16px;
     align-items: center;
   }
+
+  /* Force single-line layout: left brand, center search, right controls */
+  .topbar {
+    display: flex !important;
+    justify-content: space-between !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  /* Reduce font sizes by ~50% on mobile as requested */
+  .topbar, .topbar * {
+    font-size: 50% !important;
+    line-height: 1 !important;
+  }
+
+  .topbar h1 {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 40% !important;
+  }
+
+  .center-block {
+    position: static;
+    left: auto;
+    transform: none;
+    width: auto;
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0; /* allow shrinking */
+    flex-direction: row;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0;
+  }
+
+  .center-search { order: 2; flex: 0 1 60%; min-width: 0; }
+  .center-search input#search{ width: min(60%, 240px); max-width: 100%; font-size: inherit; }
+
+  .controls-right { order: 3; display: flex; gap: 8px; flex-wrap: nowrap; justify-content: flex-end; overflow-x: auto; -webkit-overflow-scrolling: touch; flex: 0 0 auto; }
+  .controls-right > * { flex: 0 0 auto; }
 
   /* Stack the centered block to flow naturally on small screens */
   .center-block{
@@ -205,7 +250,7 @@ select#pageSize{ min-width:84px; }
     gap: 8px;
     align-items: center;
     justify-content: space-between;
-    margin-top: 4px;
+    margin-top: 6px;
   }
 
   .center-search { order: 1; flex: 1 1 60%; }
@@ -220,6 +265,9 @@ select#pageSize{ min-width:84px; }
     font-size: 15px;
     border-radius: 10px;
     white-space: nowrap;
+    writing-mode: horizontal-tb;
+    word-break: keep-all;
+    min-width: 64px;
   }
 
   /* Give the gallery more breathing room on small screens */
@@ -233,6 +281,50 @@ select#pageSize{ min-width:84px; }
 
   /* Extra bottom padding so fixed controls (if any) don't cover gallery */
   body { padding-bottom: 12px; }
+
+  /* Strong override: force horizontal text flow in the topbar to avoid vertical CJK stacking */
+  .topbar, .topbar * {
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    word-break: keep-all !important;
+    white-space: nowrap !important;
+  }
+  /* Allow horizontal scrolling if content overflows */
+  .topbar { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* Extra strong overrides for known Chrome mobile quirks */
+  .controls-right, .inline-pagination, .center-block {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  .topbar, .controls-right, .inline-pagination {
+    -webkit-writing-mode: horizontal-tb !important;
+    -webkit-text-orientation: mixed !important;
+  }
+
+  /* If buttons were rotated by any transform, undo it */
+  .topbar button, .topbar select, .topbar a, .topbar span {
+    transform: none !important;
+  }
+
+  /* Stronger prevention of vertical CJK layout and text-combining */
+  .topbar h1, .topbar h1 *, .controls-right > *, .inline-pagination > * {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+    writing-mode: horizontal-tb !important;
+    -webkit-writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    -webkit-text-orientation: mixed !important;
+    text-combine-upright: none !important;
+    -webkit-text-combine: none !important;
+    letter-spacing: normal !important;
+  }
 }
 
 .item {

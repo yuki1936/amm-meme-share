@@ -159,11 +159,15 @@ async function init() {
 
 // 事件
 function bindEvents() {
-  searchInput.oninput = () => {
-    state.search = searchInput.value.toLowerCase();
-    state.page = 1;
-    filter();
-  };
+  if (searchInput) {
+    searchInput.oninput = () => {
+      state.search = searchInput.value.toLowerCase();
+      state.page = 1;
+      filter();
+    };
+  } else {
+    state.search = "";
+  }
 
   pageSizeSelect.onchange = () => {
     const v = pageSizeSelect.value;
