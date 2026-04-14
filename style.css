@@ -349,42 +349,7 @@ select#pageSize{ min-width:84px; }
 }
 
 .item:hover img{ transform: scale(1.03); }
-
-/* hover操作 */
-.actions {
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  display: none;
-}
-
-.item:hover .actions {
-  display: block;
-}
-
-.actions button {
-  margin-left: 4px;
-  font-size: 11px;
-  background: rgba(0,0,0,0.6);
-  color: white;
-  border: none;
-  padding: 3px 5px;
-  border-radius: 4px;
-}
-
-/* copy/download specific positions */
-.copy-btn, .dl-btn { position: absolute; z-index: 6; font-size: 12px; padding: 6px 8px; border-radius: 6px; }
-.copy-btn { left: 8px; bottom: 8px; background: rgba(0,0,0,0.7); color: #fff; }
-.dl-btn { right: 8px; bottom: 8px; background: rgba(255,255,255,0.95); color: #111; border: 1px solid rgba(0,0,0,0.12); }
-
-/* Default: show action buttons on hover for desktop */
-.item:hover .actions { display: block; }
-
-/* Mobile: always show buttons (better touch targets) and allow wrapping */
-@media (max-width: 600px) {
-  .actions { display: block; }
-  .copy-btn, .dl-btn { font-size: 14px; padding: 8px 10px; border-radius: 10px; }
-}
+/* actions removed */
 
 /* GIF badge in bottom-left of thumbnail */
 .gif-badge {
@@ -428,6 +393,25 @@ select#pageSize{ min-width:84px; }
   transform-origin: center center;
   cursor: zoom-out;
 }
+
+/* viewer controls (copy/download) */
+.viewer-controls{
+  position: fixed;
+  top: 14px;
+  right: 18px;
+  display: flex;
+  gap: 8px;
+  z-index: 40000;
+}
+.viewer-controls button{
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+.viewer-controls .vc-copy{ background: rgba(255,255,255,0.08); color: #fff; }
+.viewer-controls .vc-download{ background: #fff; color: #111; border: 1px solid rgba(0,0,0,0.08); }
 
 /* When viewer is open, de-emphasize GIF badges so they look attached but subdued */
 .viewer-open .gif-badge {
