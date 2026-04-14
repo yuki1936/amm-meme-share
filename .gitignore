@@ -1,0 +1,9 @@
+node_modules/
+thumbs/
+images/
+dist/
+.DS_Store
+.env
+.vscode/
+npm-debug.log*
+package-lock.json

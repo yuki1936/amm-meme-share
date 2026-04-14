@@ -1,0 +1,12 @@
+{
+  "name": "amiao-gallery-utils",
+  "version": "1.0.0",
+  "description": "Utilities for generating thumbnails for the 阿喵喵 gallery",
+  "scripts": {
+    "generate-thumbs": "node scripts/generate-thumbs.js --width=400 --quality=80"
+  },
+  "dependencies": {
+    "minimist": "^1.2.8",
+    "sharp": "^0.32.6"
+  }
+}

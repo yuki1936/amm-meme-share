@@ -1,0 +1,348 @@
+:root{
+  --bg: #f5f6f7;
+  --text: #111217;
+  --topbar-bg: #ffffff;
+  --topbar-height: 56px;
+  --input-bg: #ffffff;
+  --card-bg: #ffffff;
+  --muted: #666;
+}
+
+.dark{
+  --bg: #0b0b0d;
+  --text: #e8e8e8;
+  --topbar-bg: #0f1113;
+  --input-bg: #0b0d0f;
+  --card-bg: #0b0d0f;
+  --muted: #a8a8a8;
+}
+
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding-top: var(--topbar-height);
+}
+
+/* 顶栏 */
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--topbar-bg);
+  padding: 6px 10px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+  gap: 8px;
+  z-index: 1000;
+  height: var(--topbar-height);
+}
+
+.topbar h1 {
+  margin: 0;
+  color: var(--text);
+  font-size: 15px; /* de-emphasized base text */
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* The clickable brand link: larger and touch-friendly */
+#brand {
+  display: inline-block;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+
+.brand-blue {
+  color: #1e90ff; /* DodgerBlue */
+  font-size: 26px; /* make 阿喵喵 visually prominent */
+  font-weight: 700;
+  line-height: 1;
+}
+
+#brand:focus{ outline: 3px solid rgba(30,144,255,0.18); outline-offset: 2px; }
+#brand:hover .brand-blue{ text-decoration: underline; }
+
+.topbar h1 a:hover{ text-decoration: underline; }
+
+.center-block{
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.center-search { }
+
+.controls-right{
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+input, select {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: var(--input-bg);
+  color: var(--text);
+  font-size: 13px;
+}
+
+/* narrow search input to fit one line */
+input#search{ min-width:160px; max-width:260px; width:22vw; }
+select#pageSize{ min-width:84px; }
+
+/* inline dark toggle (not fixed) */
+.dark-toggle{
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: var(--topbar-bg);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.dark-toggle:focus{outline: none; box-shadow: 0 0 0 3px rgba(0,0,0,0.06);} 
+
+/* 注意事项按钮 */
+.note-btn{
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: var(--topbar-bg);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* 弹窗 */
+.modal{
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  justify-content: center;
+  align-items: center;
+  z-index: 20000;
+}
+
+.modal[aria-hidden="false"]{ display: flex; }
+
+.modal-content{
+  background: var(--topbar-bg);
+  color: var(--text);
+  padding: 18px;
+  border-radius: 10px;
+  max-width: 520px;
+  width: 92%;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+.modal-close{
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.modal-content h3{ margin-top: 0; }
+
+/* 瀑布流 */
+#gallery{
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 6px;
+  padding: 8px;
+}
+
+@media (max-width: 1400px) { #gallery { grid-template-columns: repeat(8, 1fr); } }
+@media (max-width: 1200px) { #gallery { grid-template-columns: repeat(6, 1fr); } }
+@media (max-width: 900px) { #gallery { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 600px) { #gallery { grid-template-columns: repeat(2, 1fr); } }
+
+/* Mobile adjustments: larger tap target and slightly taller topbar */
+@media (max-width: 600px) {
+  :root{ --topbar-height: 64px; }
+  body{ padding-top: var(--topbar-height); }
+  .topbar h1{ font-size: 14px; }
+  .brand-blue{ font-size: 28px; }
+  #brand{ padding: 10px 14px; }
+  .center-search { left: 50%; transform: translateX(-50%); }
+}
+
+/* Mobile layout improvements */
+@media (max-width: 600px) {
+  .topbar {
+    padding: 8px 12px;
+    align-items: flex-start;
+  }
+
+  /* Stack the centered block to flow naturally on small screens */
+  .center-block{
+    position: static;
+    left: auto;
+    transform: none;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+    margin-top: 4px;
+  }
+
+  .center-search { order: 1; width: 100%; }
+  .center-search input#search{ width: 100%; min-width: unset; max-width: 100%; }
+
+  .controls-right { order: 2; display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between; }
+  .controls-right > * { flex: 1 1 auto; }
+
+  /* Make controls easier to tap */
+  .controls-right button, .controls-right select, .dark-toggle, .note-btn {
+    padding: 10px 12px;
+    font-size: 15px;
+    border-radius: 10px;
+  }
+
+  /* Give the gallery more breathing room on small screens */
+  #gallery{ padding: 6px; gap: 8px; }
+
+  /* Ensure viewer image fits well on narrow screens */
+  #viewer img { max-width: 96%; max-height: 88%; }
+
+  /* Slightly larger gif-badge for touch readers */
+  .gif-badge { font-size: 12px; padding: 4px 8px; left: 10px; bottom: 10px; }
+
+  /* Extra bottom padding so fixed controls (if any) don't cover gallery */
+  body { padding-bottom: 12px; }
+}
+
+.item {
+  position: relative;
+  margin: 0;
+  /* 固定每个缩略图占位比例，保证每格相同大小 */
+  aspect-ratio: 1/1;
+  overflow: hidden;
+  background: var(--card-bg);
+  border-radius: 6px;
+}
+
+.item img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* 保持比例并完整显示图片 */
+  object-position: center center;
+  display: block;
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+.item:hover img{ transform: scale(1.03); }
+
+/* hover操作 */
+.actions {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  display: none;
+}
+
+.item:hover .actions {
+  display: block;
+}
+
+.actions button {
+  margin-left: 4px;
+  font-size: 11px;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border: none;
+  padding: 3px 5px;
+  border-radius: 4px;
+}
+
+/* GIF badge in bottom-left of thumbnail */
+.gif-badge {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  background: rgba(0,0,0,0.65);
+  color: #fff;
+  padding: 3px 6px;
+  font-size: 11px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 5;
+}
+.gif-badge .dot {
+  width: 8px;
+  height: 8px;
+  background: #ffcc00;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(255,204,0,0.12) inset;
+}
+
+/* 预览 */
+#viewer {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  justify-content: center;
+  align-items: center;
+  z-index: 30000; /* keep viewer above badges and other UI */
+}
+
+#viewer img {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 10px;
+  transition: transform 0.12s ease;
+  transform-origin: center center;
+  cursor: zoom-out;
+}
+
+/* When viewer is open, de-emphasize GIF badges so they look attached but subdued */
+.viewer-open .gif-badge {
+  opacity: 0.28;
+  pointer-events: none;
+  transform: translateY(2px) scale(0.98);
+  filter: grayscale(60%) brightness(0.6);
+  transition: opacity 160ms ease, transform 160ms ease, filter 160ms ease;
+}
+/* inline pagination inside header controls-right */
+.inline-pagination{
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.inline-pagination button{
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: var(--card-bg);
+  color: var(--text);
+  cursor: pointer;
+}
+.inline-pagination button:disabled{opacity:0.45; cursor:default}
+
+.inline-pagination span{color:var(--muted)}

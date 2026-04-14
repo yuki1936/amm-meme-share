@@ -1,0 +1,9 @@
+Used open-source projects in this project:
+
+- JSZip
+	- Purpose: create ZIP archives client-side for '下载全部' feature
+	- Source / CDN: https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js
+	- License: MIT
+
+Notes:
+- The project otherwise uses native browser APIs: Fetch API and Clipboard API.
