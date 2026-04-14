@@ -48,7 +48,7 @@ function initDarkMode(){
 // 辅助：fetch image as blob（用于下载与复制图片）
 async function fetchBlob(url){
   try{
-    const r = await fetch(encodePath(url));
+    const r = await fetch(encodePath(url), { credentials: 'same-origin', redirect: 'follow' });
     if (!r.ok) throw new Error('network');
     return await r.blob();
   }catch(e){
@@ -82,13 +82,37 @@ async function copyImage(url){
   try{
     const blob = await fetchBlob(url);
     if (blob && navigator.clipboard && window.ClipboardItem) {
-      const item = new ClipboardItem({ [blob.type]: blob });
-      await navigator.clipboard.write([item]);
-      return { ok:true, mode: 'image' };
+      let mime = blob.type;
+      if (!mime || mime === 'application/octet-stream') {
+        const ext = (url.split('.').pop()||'').split('?')[0].toLowerCase();
+        const map = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', gif: 'image/gif', svg: 'image/svg+xml' };
+        mime = map[ext] || 'image/png';
+        const buf = await blob.arrayBuffer();
+        const newBlob = new Blob([buf], { type: mime });
+        const item = new ClipboardItem({ [mime]: newBlob });
+        await navigator.clipboard.write([item]);
+      } else {
+        const item = new ClipboardItem({ [mime]: blob });
+        await navigator.clipboard.write([item]);
+      }
+      return { ok: true, mode: 'image' };
     }
+  }catch(e){
+    // fallthrough to fallback below
+  }
+
+  // Fallback 1: try to trigger a download so user gets the file
+  try{
+    const a = document.createElement('a');
+    a.href = encodePath(url);
+    a.download = url.split('/').pop() || 'image';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    return { ok: false, mode: 'download' };
   }catch(e){}
 
-  // fallback: copy URL
+  // Fallback 2: copy the URL text
   try{
     await navigator.clipboard.writeText(location.origin + '/' + encodePath(url));
     return { ok:true, mode: 'text' };
@@ -224,6 +248,7 @@ function render() {
       const full = encodePath(item.src);
       if (img.src !== full) img.src = full;
     };
+    // Single-click opens preview; copy is handled by the copy button
     img.onclick = () => openViewer(item.src);
 
     const actions = document.createElement("div");
@@ -235,7 +260,15 @@ function render() {
     copyBtn.onclick = async (e) => {
       e.stopPropagation();
       const res = await copyImage(item.src);
-      if (!res.ok) alert('复制失败，请手动保存链接: ' + (location.origin + '/' + item.src));
+      if (res && res.ok && res.mode === 'image') {
+        showToast('图片已复制到剪贴板');
+      } else if (res && res.mode === 'download') {
+        showToast('图片已开始下载，检查下载目录');
+      } else if (res && res.mode === 'text') {
+        showToast('已复制图片链接到剪贴板');
+      } else {
+        showToast('复制失败，请手动保存图片或链接');
+      }
     };
 
     const dlBtn = document.createElement("button");
@@ -445,3 +478,25 @@ function closeViewer() {
 }
 
 init();
+
+// show a short toast notification
+function showToast(text, timeout = 1400){
+  try{
+    const id = 'app-toast';
+    // remove existing
+    const prev = document.getElementById(id);
+    if (prev) prev.remove();
+
+    const el = document.createElement('div');
+    el.id = id;
+    el.className = 'toast';
+    el.innerText = text;
+    document.body.appendChild(el);
+    // force a reflow then show
+    requestAnimationFrame(()=> el.classList.add('show'));
+    setTimeout(()=>{
+      el.classList.remove('show');
+      setTimeout(()=> el.remove(), 220);
+    }, timeout);
+  }catch(e){ /* ignore */ }
+}
