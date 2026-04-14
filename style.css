@@ -198,9 +198,9 @@ select#pageSize{ min-width:84px; }
   /* Force single-line layout: left brand, center search, right controls */
   .topbar {
     display: flex !important;
-    justify-content: space-between !important;
-    flex-wrap: nowrap !important;
-    align-items: center !important;
+    justify-content: flex-start !important;
+    flex-wrap: wrap !important;
+    align-items: flex-start !important;
     gap: 8px !important;
   }
 
@@ -229,14 +229,15 @@ select#pageSize{ min-width:84px; }
     flex-direction: row;
     gap: 8px;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-end;
+    flex-wrap: wrap; /* allow controls to wrap into multiple rows */
     margin-top: 0;
   }
 
   .center-search { order: 2; flex: 0 1 60%; min-width: 0; }
   .center-search input#search{ width: min(60%, 240px); max-width: 100%; font-size: inherit; }
 
-  .controls-right { order: 3; display: flex; gap: 8px; flex-wrap: nowrap; justify-content: flex-end; overflow-x: auto; -webkit-overflow-scrolling: touch; flex: 0 0 auto; }
+  .controls-right { order: 3; display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; overflow-x: visible; -webkit-overflow-scrolling: touch; flex: 0 1 auto; max-width: 60%; }
   .controls-right > * { flex: 0 0 auto; }
 
   /* Stack the centered block to flow naturally on small screens */
@@ -440,3 +441,21 @@ select#pageSize{ min-width:84px; }
 .inline-pagination button:disabled{opacity:0.45; cursor:default}
 
 .inline-pagination span{color:var(--muted)}
+
+/* Toast notification used for copy feedback */
+.toast{
+  position: fixed;
+  top: calc(var(--topbar-height) + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-6px);
+  background: rgba(0,0,0,0.78);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 10px;
+  z-index: 60000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease, transform 160ms ease;
+  font-size: 14px;
+}
+.toast.show{ opacity: 1; transform: translateX(-50%) translateY(0); }
