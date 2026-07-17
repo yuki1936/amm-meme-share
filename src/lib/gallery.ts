@@ -21,17 +21,21 @@ export function updateRoute(categoryId: string, itemId = '', mode: 'push' | 'rep
   window.history[mode === 'push' ? 'pushState' : 'replaceState'](null, '', hash);
 }
 
-export async function downloadItem(item: GalleryItem): Promise<void> {
+async function fetchItemBlob(item: GalleryItem): Promise<Blob> {
   const response = await fetch(assetUrl(item.src));
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  const objectUrl = URL.createObjectURL(await response.blob());
+  return response.blob();
+}
+
+export async function downloadItem(item: GalleryItem): Promise<void> {
+  const objectUrl = URL.createObjectURL(await fetchItemBlob(item));
   const link = document.createElement('a');
   link.href = objectUrl;
   link.download = item.src.split('/').pop() ?? item.id;
   document.body.appendChild(link);
   link.click();
   link.remove();
-  URL.revokeObjectURL(objectUrl);
+  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
 }
 
 async function blobToPng(blob: Blob): Promise<Blob> {
@@ -46,34 +50,12 @@ async function blobToPng(blob: Blob): Promise<Blob> {
   });
 }
 
-export async function copyItem(item: GalleryItem): Promise<'image' | 'link'> {
-  const absoluteUrl = new URL(assetUrl(item.src), window.location.href).href;
-  try {
-    if (!navigator.clipboard || typeof ClipboardItem === 'undefined') throw new Error('Clipboard unavailable');
-    const response = await fetch(assetUrl(item.src));
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    let blob = await response.blob();
-    const clipboard = ClipboardItem as typeof ClipboardItem & { supports?: (type: string) => boolean };
-    const supportsOriginal = clipboard.supports?.(blob.type) ?? false;
-    if (!supportsOriginal && item.animated) throw new Error('Animated clipboard unavailable');
-    if (!supportsOriginal) blob = await blobToPng(blob);
-    await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
-    return 'image';
-  } catch {
-    await navigator.clipboard.writeText(absoluteUrl);
-    return 'link';
-  }
+export async function copyItem(item: GalleryItem): Promise<void> {
+  if (!navigator.clipboard || typeof ClipboardItem === 'undefined') throw new Error('Clipboard unavailable');
+  const png = fetchItemBlob(item).then(blobToPng);
+  await navigator.clipboard.write([new ClipboardItem({ 'image/png': png })]);
 }
 
-export async function shareItem(title: string): Promise<'shared' | 'copied' | 'cancelled'> {
-  try {
-    if (navigator.share) {
-      await navigator.share({ title, url: window.location.href });
-      return 'shared';
-    }
-    await navigator.clipboard.writeText(window.location.href);
-    return 'copied';
-  } catch (error) {
-    return error instanceof DOMException && error.name === 'AbortError' ? 'cancelled' : Promise.reject(error);
-  }
+export async function copyPageLink(): Promise<void> {
+  await navigator.clipboard.writeText(window.location.href);
 }

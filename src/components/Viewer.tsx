@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, Copy, Download, LoaderCircle, Share2, X } from 'lucide-react';
-import { assetUrl, copyItem, downloadItem, shareItem } from '../lib/gallery';
+import { ChevronLeft, ChevronRight, Copy, Download, Link, LoaderCircle, X } from 'lucide-react';
+import { assetUrl, copyItem, copyPageLink, downloadItem } from '../lib/gallery';
 import type { GalleryCategory, GalleryItem } from '../types';
 
 interface ViewerProps {
@@ -37,19 +37,19 @@ export function Viewer({ category, item, index, onClose, onNavigate, notify }: V
 
   const handleCopy = async () => {
     try {
-      const result = await copyItem(item);
-      notify(result === 'image' ? '图片已复制' : '图片链接已复制');
+      await copyItem(item);
+      notify(item.animated ? '已复制动图首帧' : '图片已复制');
     } catch {
       notify('当前浏览器不支持复制');
     }
   };
 
-  const handleShare = async () => {
+  const handleCopyLink = async () => {
     try {
-      const result = await shareItem(`${category.name}表情`);
-      if (result === 'copied') notify('分享链接已复制');
+      await copyPageLink();
+      notify('页面链接已复制');
     } catch {
-      notify('分享失败');
+      notify('复制链接失败');
     }
   };
 
@@ -70,7 +70,7 @@ export function Viewer({ category, item, index, onClose, onNavigate, notify }: V
         </div>
         <div className="flex items-center gap-1.5">
           <button type="button" className="viewer-icon-button" title="复制图片" aria-label="复制图片" onClick={handleCopy}><Copy size={18} /></button>
-          <button type="button" className="viewer-icon-button" title="分享" aria-label="分享" onClick={handleShare}><Share2 size={18} /></button>
+          <button type="button" className="viewer-icon-button" title="复制页面链接" aria-label="复制页面链接" onClick={handleCopyLink}><Link size={18} /></button>
           <button type="button" className="viewer-icon-button" title="下载原图" aria-label="下载原图" onClick={handleDownload}><Download size={18} /></button>
           <button ref={closeRef} type="button" className="viewer-icon-button" title="关闭" aria-label="关闭" onClick={onClose}><X size={20} /></button>
         </div>
