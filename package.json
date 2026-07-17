@@ -1,12 +1,33 @@
 {
-  "name": "amiao-gallery-utils",
+  "name": "amiao-sticker-gallery",
   "version": "1.0.0",
-  "description": "Utilities for generating thumbnails for the 阿喵喵 gallery",
+  "private": true,
+  "description": "A modern categorized reaction image gallery for Cloudflare Pages",
   "scripts": {
-    "generate-thumbs": "node scripts/generate-thumbs.js --width=400 --quality=80"
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "rename-images": "bun run scripts/rename-images.js",
+    "generate-gallery": "bun run scripts/generate-gallery.js",
+    "generate-thumbs": "bun run scripts/generate-thumbs.js --width=400 --quality=80",
+    "validate": "bun run scripts/validate-gallery.js",
+    "sync-gallery": "bun run rename-images && bun run generate-thumbs && bun run generate-gallery && bun run validate"
   },
   "dependencies": {
+    "lucide-react": "^1.25.0",
     "minimist": "^1.2.8",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-masonry-css": "^1.0.16",
     "sharp": "^0.32.6"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.1.5"
   }
 }

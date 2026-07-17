@@ -1,0 +1,39 @@
+{
+  "categories": [
+    {
+      "id": "amamiyakokoro",
+      "name": "阿喵喵",
+      "romanized": "Amamiya Kokoro",
+      "description": "天宫心（日语：天宮こころ / あまみや こころ，Amamiya Kokoro）是一名从 2019 年 8 月 13 日在 YouTube 开始活动的 VTuber，所属业界团体彩虹社的成员。",
+      "color": "#147d92"
+    },
+    {
+      "id": "mutsumi",
+      "name": "睦头",
+      "romanized": "Mutsumi",
+      "description": "若叶睦（Mutsumi）是由日本娱乐公司 Bushiroad 策划的次世代少女乐队企划《BanG Dream!》及其衍生作品的登场角色。乐队 Ave Mujica 的吉他手，代号 Mortis。（睦头人）",
+      "color": "#657d35"
+    },
+    {
+      "id": "phoebe",
+      "name": "菲比",
+      "romanized": "Phoebe",
+      "description": "菲比是库洛制作的游戏《鸣潮》的登场角色。\n隐海修会的教士菲比，友善虔诚、稳重得体。\n恪守教义、自我约束的圣职者，仍然存有着为所爱之物欢欣雀跃的真挚之心。",
+      "color": "#c4515c"
+    },
+    {
+      "id": "eku",
+      "name": "Eku",
+      "romanized": "Eku",
+      "description": "Eku（日语：エク）是 VRChat 中使用的女性模型形象，由 sep-neko-ya 于 2025 年创作。角色设定为就读于魔法系高中的少女，整体采用带有魔法学园气息的柔美风格。",
+      "color": "#a66721"
+    },
+    {
+      "id": "magical-girl-witch-trials",
+      "name": "魔法少女的魔女审判",
+      "romanized": "Magical Girl Witch Trials",
+      "description": "《魔法少女的魔女审判》（日语：魔法少女ノ魔女裁判，英语：Magical Girl Witch Trials）是由 Acacia 制作的魔法议论悬疑冒险游戏。13 名拥有魔法的少女被囚禁在孤岛的牢屋敷中，必须通过魔女审判找出潜藏其中的“魔女”。",
+      "color": "#9f3650"
+    }
+  ]
+}

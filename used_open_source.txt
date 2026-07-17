@@ -1,9 +1,55 @@
-Used open-source projects in this project:
+Open-source projects used by this repository
+============================================
 
-- JSZip
-	- Purpose: create ZIP archives client-side for '全部下载' feature
-	- Source / CDN: https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js
-	- License: MIT
+Runtime UI
+----------
+- React / React DOM 19.2.7
+  Purpose: component model and browser rendering
+  Source: https://react.dev/
+  License: MIT
 
-Notes:
-- The project uses native browser APIs: Fetch API.
+- Lucide React 1.25.0
+  Purpose: interface icons
+  Source: https://lucide.dev/
+  License: ISC
+
+- react-masonry-css 1.0.16
+  Purpose: responsive masonry column layout
+  Source: https://github.com/paulcollett/react-masonry-css
+  License: MIT
+
+Styling and build tools
+-----------------------
+- Tailwind CSS / @tailwindcss/vite 4.3.3
+  Purpose: design tokens, utilities, and CSS generation
+  Source: https://tailwindcss.com/
+  License: MIT
+
+- Vite 8.1.5 / @vitejs/plugin-react 6.0.3
+  Purpose: local development and production bundling
+  Source: https://vite.dev/
+  License: MIT
+
+- TypeScript 7.0.2
+  Purpose: static type checking
+  Source: https://www.typescriptlang.org/
+  License: Apache-2.0
+
+Asset tooling
+-------------
+- Bun 1.3.14
+  Purpose: package management, scripts, and JavaScript runtime
+  Source: https://bun.com/
+  License: MIT
+
+- Sharp 0.32.6
+  Purpose: metadata extraction and static/animated WebP generation
+  Source: https://sharp.pixelplumbing.com/
+  License: Apache-2.0
+
+- minimist 1.2.8
+  Purpose: command-line option parsing for thumbnail generation
+  Source: https://github.com/minimistjs/minimist
+  License: MIT
+
+No third-party CDN scripts or styles are loaded at runtime.

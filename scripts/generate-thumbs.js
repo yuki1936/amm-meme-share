@@ -1,48 +1,80 @@
 #!/usr/bin/env node
-// generate-thumbs.js
 // Usage: node scripts/generate-thumbs.js [--width=400] [--quality=80]
-// Generates WebP thumbnails into ./thumbs/ with same basename and .webp extension.
 
 const fs = require('fs').promises;
 const path = require('path');
 const sharp = require('sharp');
 
-const IMAGES_DIR = path.join(__dirname, '..', 'images');
-const THUMBS_DIR = path.join(__dirname, '..', 'thumbs');
+const IMAGES_DIR = path.join(__dirname, '..', 'public', 'images');
+const THUMBS_DIR = path.join(__dirname, '..', 'public', 'thumbs');
 
 const argv = require('minimist')(process.argv.slice(2));
 const WIDTH = parseInt(argv.width || argv.w || 400, 10);
 const QUALITY = parseInt(argv.quality || argv.q || 80, 10);
+const CATEGORY = argv.category || argv.c || null;
+const ANIMATED_ONLY = Boolean(argv['animated-only']);
+const FORCE = Boolean(argv.force || argv.f);
+const supportedImage = /\.(?:jpe?g|png|gif|webp|bmp)$/i;
 
-async function ensureDir(dir){
-  try{ await fs.mkdir(dir, { recursive: true }); }catch(e){}
+if (CATEGORY && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(CATEGORY)) {
+  throw new Error(`Invalid category slug: ${CATEGORY}`);
 }
 
-async function listImages(){
-  const entries = await fs.readdir(IMAGES_DIR, { withFileTypes: true });
-  return entries.filter(e=>e.isFile()).map(e=>e.name).filter(n=>/\.(jpe?g|png|gif|webp|bmp)$/i.test(n));
+async function listImages(dir = IMAGES_DIR) {
+  const entries = await fs.readdir(dir, { withFileTypes: true });
+  const nested = await Promise.all(entries.map(async (entry) => {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) return listImages(fullPath);
+    return entry.isFile() && supportedImage.test(entry.name) ? [fullPath] : [];
+  }));
+  return nested.flat();
 }
 
-async function generate(){
-  await ensureDir(THUMBS_DIR);
-  const imgs = await listImages();
-  console.log(`Found ${imgs.length} images. Generating ${WIDTH}px webp thumbnails to ${THUMBS_DIR}`);
-  for (const name of imgs){
-    const inPath = path.join(IMAGES_DIR, name);
-    const base = name.replace(/\.[^/.]+$/, '');
-    const outName = base + '.webp';
-    const outPath = path.join(THUMBS_DIR, outName);
-    try{
-      await sharp(inPath)
+async function generate() {
+  const sourceDir = CATEGORY ? path.join(IMAGES_DIR, CATEGORY) : IMAGES_DIR;
+  let images = await listImages(sourceDir);
+  if (ANIMATED_ONLY) images = images.filter((file) => /\.gif$/i.test(file));
+  images.sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
+  const scope = CATEGORY ? ` for category "${CATEGORY}"` : '';
+  const mode = ANIMATED_ONLY ? ' animated' : '';
+  console.log(`Found ${images.length}${mode} images${scope}. Generating ${WIDTH}px WebP thumbnails.`);
+  let generated = 0;
+  let skipped = 0;
+
+  for (const inputPath of images) {
+    const relativePath = path.relative(IMAGES_DIR, inputPath);
+    const outputPath = path.join(
+      THUMBS_DIR,
+      relativePath.replace(/\.[^/.]+$/, '.webp'),
+    );
+    await fs.mkdir(path.dirname(outputPath), { recursive: true });
+
+    try {
+      if (!FORCE) {
+        const [inputStat, outputStat] = await Promise.all([
+          fs.stat(inputPath),
+          fs.stat(outputPath).catch(() => null),
+        ]);
+        if (outputStat && outputStat.mtimeMs >= inputStat.mtimeMs) {
+          skipped++;
+          continue;
+        }
+      }
+      await sharp(inputPath, { animated: /\.gif$/i.test(inputPath) })
         .resize({ width: WIDTH, withoutEnlargement: true })
-        .webp({ quality: QUALITY })
-        .toFile(outPath);
-      console.log('✓', name, '→', path.relative(process.cwd(), outPath));
-    }catch(err){
-      console.warn('✗ failed', name, err.message);
+        .webp({ quality: QUALITY, effort: 4 })
+        .toFile(outputPath);
+      generated++;
+      console.log('OK', relativePath, '->', path.relative(process.cwd(), outputPath));
+    } catch (error) {
+      console.warn('Failed', relativePath, error.message);
     }
   }
-  console.log('Done.');
+
+  console.log(`Done. Generated ${generated}; skipped ${skipped} unchanged.`);
 }
 
-generate().catch(err=>{ console.error(err); process.exit(1); });
+generate().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
