@@ -1,7 +1,10 @@
 import type { GalleryItem } from '../types';
 
+const assetBaseUrl = import.meta.env.VITE_ASSET_BASE_URL?.replace(/\/$/, '') ?? '';
+
 export function assetUrl(path: string): string {
-  return `/${path.split('/').map(encodeURIComponent).join('/')}`;
+  const encodedPath = path.split('/').map(encodeURIComponent).join('/');
+  return `${assetBaseUrl}/${encodedPath}`;
 }
 
 export function parseRoute(): { categoryId: string; itemId: string } {
@@ -18,13 +21,17 @@ export function updateRoute(categoryId: string, itemId = '', mode: 'push' | 'rep
   window.history[mode === 'push' ? 'pushState' : 'replaceState'](null, '', hash);
 }
 
-export function downloadItem(item: GalleryItem): void {
+export async function downloadItem(item: GalleryItem): Promise<void> {
+  const response = await fetch(assetUrl(item.src));
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const objectUrl = URL.createObjectURL(await response.blob());
   const link = document.createElement('a');
-  link.href = assetUrl(item.src);
+  link.href = objectUrl;
   link.download = item.src.split('/').pop() ?? item.id;
   document.body.appendChild(link);
   link.click();
   link.remove();
+  URL.revokeObjectURL(objectUrl);
 }
 
 async function blobToPng(blob: Blob): Promise<Blob> {

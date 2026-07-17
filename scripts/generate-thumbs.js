@@ -5,8 +5,9 @@ const fs = require('fs').promises;
 const path = require('path');
 const sharp = require('sharp');
 
-const IMAGES_DIR = path.join(__dirname, '..', 'public', 'images');
-const THUMBS_DIR = path.join(__dirname, '..', 'public', 'thumbs');
+const MEDIA_DIR = path.join(__dirname, '..', 'media');
+const IMAGES_DIR = path.join(MEDIA_DIR, 'images');
+const THUMBS_DIR = path.join(MEDIA_DIR, 'thumbs');
 
 const argv = require('minimist')(process.argv.slice(2));
 const WIDTH = parseInt(argv.width || argv.w || 400, 10);

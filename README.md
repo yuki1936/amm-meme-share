@@ -30,22 +30,42 @@ Build output directory: dist
 Root directory: /
 ```
 
-建议使用 Pages v3 构建镜像，并把环境变量 `BUN_VERSION` 设置为 `1.3.14`。`public/_headers` 会为构建资源、缩略图、原图和 `gallery.json` 分别设置缓存策略。
+建议使用 Pages v3 构建镜像，并设置以下环境变量：
+
+```text
+BUN_VERSION=1.3.14
+VITE_ASSET_BASE_URL=https://assets.example.com
+```
+
+`VITE_ASSET_BASE_URL` 必须指向 R2 存储桶绑定的公开自定义域名，不要以 `/` 结尾。`public/_headers` 为构建资源和 `gallery.json` 设置缓存及安全响应头；图片缓存在 R2 自定义域名上配置。
+
+## Cloudflare R2
+
+原图和缩略图保存在 R2 的 `images/` 和 `thumbs/` 前缀下。本地 `media/` 不进入 Git，使用配置好的 rclone remote 同步：
+
+```bash
+rclone copy media/images r2:amm-meme-share/images --progress
+rclone copy media/thumbs r2:amm-meme-share/thumbs --progress
+rclone check media/images r2:amm-meme-share/images
+rclone check media/thumbs r2:amm-meme-share/thumbs
+```
+
+R2 存储桶需要允许网站域名发起跨域 `GET` 和 `HEAD` 请求，以支持复制和下载功能。API 凭据只保存在本机 rclone 配置中，不得放入代码库。
 
 ## 图片结构
 
 分类目录使用小写 ASCII slug，文件使用分类前缀和五位稳定编号：
 
 ```text
-public/images/<category>/<category>_00001.<ext>
-public/thumbs/<category>/<category>_00001.webp
+media/images/<category>/<category>_00001.<ext>
+media/thumbs/<category>/<category>_00001.webp
 ```
 
 分类的显示名、顺序、介绍和强调色在 `categories.json` 中维护。未配置的新目录也会被发现，但目录名必须符合 slug 规则。
 
 ## 添加图片
 
-把原始图片放进 `public/images/<category>/`，然后运行：
+把原始图片放进 `media/images/<category>/`，然后运行：
 
 ```bash
 bun run sync-gallery
@@ -74,8 +94,8 @@ bun run validate
 
 ```text
 src/                  React 产品界面
-public/images/        原图
-public/thumbs/        WebP 缩略图
+media/images/         本地原图（不进入 Git）
+media/thumbs/         本地 WebP 缩略图（不进入 Git）
 public/gallery.json   构建后的图库清单
 scripts/              图片和清单维护工具
 categories.json       分类配置

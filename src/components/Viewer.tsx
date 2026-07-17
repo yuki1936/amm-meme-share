@@ -53,6 +53,14 @@ export function Viewer({ category, item, index, onClose, onNavigate, notify }: V
     }
   };
 
+  const handleDownload = async () => {
+    try {
+      await downloadItem(item);
+    } catch {
+      notify('下载失败');
+    }
+  };
+
   return (
     <div className="viewer-layer" role="dialog" aria-modal="true" aria-label="图片预览" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
       <header className="viewer-toolbar">
@@ -63,7 +71,7 @@ export function Viewer({ category, item, index, onClose, onNavigate, notify }: V
         <div className="flex items-center gap-1.5">
           <button type="button" className="viewer-icon-button" title="复制图片" aria-label="复制图片" onClick={handleCopy}><Copy size={18} /></button>
           <button type="button" className="viewer-icon-button" title="分享" aria-label="分享" onClick={handleShare}><Share2 size={18} /></button>
-          <button type="button" className="viewer-icon-button" title="下载原图" aria-label="下载原图" onClick={() => downloadItem(item)}><Download size={18} /></button>
+          <button type="button" className="viewer-icon-button" title="下载原图" aria-label="下载原图" onClick={handleDownload}><Download size={18} /></button>
           <button ref={closeRef} type="button" className="viewer-icon-button" title="关闭" aria-label="关闭" onClick={onClose}><X size={20} /></button>
         </div>
       </header>

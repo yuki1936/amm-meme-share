@@ -4,7 +4,8 @@ const sharp = require('sharp');
 
 const root = path.join(__dirname, '..');
 const publicDir = path.join(root, 'public');
-const imagesDir = path.join(publicDir, 'images');
+const mediaDir = path.join(root, 'media');
+const imagesDir = path.join(mediaDir, 'images');
 const configPath = path.join(root, 'categories.json');
 const outputPath = path.join(publicDir, 'gallery.json');
 const supportedImage = /\.(?:jpe?g|png|gif|webp|bmp)$/i;
@@ -68,10 +69,10 @@ async function buildCategory(category) {
     const id = filename.replace(/\.[^/.]+$/, '');
     const src = `images/${category.id}/${filename}`;
     const thumb = `thumbs/${category.id}/${id}.webp`;
-    if (!fs.existsSync(path.join(publicDir, thumb))) {
+    if (!fs.existsSync(path.join(mediaDir, thumb))) {
       throw new Error(`Missing thumbnail: ${thumb}`);
     }
-    const metadata = await sharp(path.join(publicDir, src), { animated: true }).metadata();
+    const metadata = await sharp(path.join(mediaDir, src), { animated: true }).metadata();
     const width = metadata.width || 1;
     const height = metadata.pageHeight || metadata.height || 1;
     return {

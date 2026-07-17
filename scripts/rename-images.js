@@ -4,7 +4,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const sharp = require('sharp');
 
-const IMAGES_DIR = path.join(__dirname, '..', 'public', 'images');
+const IMAGES_DIR = path.join(__dirname, '..', 'media', 'images');
 const supportedImage = /\.(?:jpe?g|png|gif|webp|bmp)$/i;
 const extensions = {
   jpeg: 'jpg',

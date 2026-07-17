@@ -5,6 +5,7 @@ const path = require('path');
 
 const root = path.join(__dirname, '..');
 const publicDir = path.join(root, 'public');
+const mediaDir = path.join(root, 'media');
 const manifest = JSON.parse(fs.readFileSync(path.join(publicDir, 'gallery.json'), 'utf8'));
 const errors = [];
 const paths = new Set();
@@ -22,8 +23,8 @@ for (const category of manifest.categories || []) {
     if (!item.id.startsWith(`${category.id}_`)) errors.push(`${category.id}: invalid item id ${item.id}`);
     if (paths.has(item.src)) errors.push(`Duplicate source path: ${item.src}`);
     paths.add(item.src);
-    if (!fs.existsSync(path.join(publicDir, item.src))) errors.push(`Missing source: ${item.src}`);
-    if (!fs.existsSync(path.join(publicDir, item.thumb))) errors.push(`Missing thumbnail: ${item.thumb}`);
+    if (!fs.existsSync(path.join(mediaDir, item.src))) errors.push(`Missing source: ${item.src}`);
+    if (!fs.existsSync(path.join(mediaDir, item.thumb))) errors.push(`Missing thumbnail: ${item.thumb}`);
     if (!Number.isInteger(item.width) || !Number.isInteger(item.height) || item.width < 1 || item.height < 1) {
       errors.push(`${item.id}: invalid dimensions ${item.width}x${item.height}`);
     }
