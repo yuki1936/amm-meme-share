@@ -34,10 +34,10 @@ Root directory: /
 
 ```text
 BUN_VERSION=1.3.14
-VITE_ASSET_BASE_URL=https://assets.example.com
+VITE_ASSET_BASE_URL=https://pub-94ae1456da3d4179a4b9f3543f91240d.r2.dev
 ```
 
-`VITE_ASSET_BASE_URL` 必须指向 R2 存储桶绑定的公开自定义域名，不要以 `/` 结尾。`public/_headers` 为构建资源和 `gallery.json` 设置缓存及安全响应头；图片缓存在 R2 自定义域名上配置。
+`VITE_ASSET_BASE_URL` 也已写入 `.env.production`，Cloudflare Pages 生产构建会自动使用。当前使用 R2 公开开发域名；以后如果绑定自定义域名，只需替换这个值。`public/_headers` 为构建资源和 `gallery.json` 设置缓存及安全响应头。
 
 ## Cloudflare R2
 
