@@ -188,7 +188,6 @@ export function Viewer({ category, item, index, onClose, onNavigate, notify }: V
         >
           <img
             key={item.id}
-            crossOrigin="anonymous"
             src={assetUrl(item.src)}
             alt={`${category.name} 表情`}
             draggable={false}
