@@ -16,8 +16,8 @@
           "src": "images/amamiyakokoro/amamiyakokoro_00001.jpg",
           "thumb": "thumbs/amamiyakokoro/amamiyakokoro_00001.webp",
           "animated": false,
-          "width": 300,
-          "height": 270
+          "width": 384,
+          "height": 384
         },
         {
           "id": "amamiyakokoro_00002",
@@ -88,8 +88,8 @@
           "src": "images/amamiyakokoro/amamiyakokoro_00010.jpg",
           "thumb": "thumbs/amamiyakokoro/amamiyakokoro_00010.webp",
           "animated": false,
-          "width": 384,
-          "height": 384
+          "width": 300,
+          "height": 270
         },
         {
           "id": "amamiyakokoro_00011",
@@ -2440,19 +2440,19 @@
       "items": [
         {
           "id": "mutsumi_00001",
-          "src": "images/mutsumi/mutsumi_00001.png",
+          "src": "images/mutsumi/mutsumi_00001.jpg",
           "thumb": "thumbs/mutsumi/mutsumi_00001.webp",
-          "animated": false,
-          "width": 830,
-          "height": 804
-        },
-        {
-          "id": "mutsumi_00002",
-          "src": "images/mutsumi/mutsumi_00002.jpg",
-          "thumb": "thumbs/mutsumi/mutsumi_00002.webp",
           "animated": false,
           "width": 960,
           "height": 960
+        },
+        {
+          "id": "mutsumi_00002",
+          "src": "images/mutsumi/mutsumi_00002.png",
+          "thumb": "thumbs/mutsumi/mutsumi_00002.webp",
+          "animated": false,
+          "width": 830,
+          "height": 804
         },
         {
           "id": "mutsumi_00003",
