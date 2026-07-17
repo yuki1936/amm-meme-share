@@ -12,26 +12,27 @@ interface ViewerProps {
   notify: (message: string) => void;
 }
 
-const MIN_ZOOM = 1;
+const MIN_ZOOM = 0.25;
+const FIT_ZOOM = 1;
 const MAX_ZOOM = 5;
 const ZOOM_STEP = 0.25;
 
 export function Viewer({ category, item, index, onClose, onNavigate, notify }: ViewerProps) {
   const [loading, setLoading] = useState(true);
-  const [zoom, setZoom] = useState(MIN_ZOOM);
+  const [zoom, setZoom] = useState(FIT_ZOOM);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
   const canvasRef = useRef<HTMLElement>(null);
-  const zoomRef = useRef(MIN_ZOOM);
+  const zoomRef = useRef(FIT_ZOOM);
   const offsetRef = useRef({ x: 0, y: 0 });
   const dragRef = useRef<{ pointerId: number; x: number; y: number; originX: number; originY: number } | null>(null);
 
   useEffect(() => {
     setLoading(true);
-    zoomRef.current = MIN_ZOOM;
+    zoomRef.current = FIT_ZOOM;
     offsetRef.current = { x: 0, y: 0 };
-    setZoom(MIN_ZOOM);
+    setZoom(FIT_ZOOM);
     setOffset({ x: 0, y: 0 });
     setDragging(false);
   }, [item.id]);
@@ -60,7 +61,7 @@ export function Viewer({ category, item, index, onClose, onNavigate, notify }: V
 
   const clampOffset = (nextOffset: { x: number; y: number }, nextZoom: number) => {
     const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect || nextZoom <= MIN_ZOOM) return { x: 0, y: 0 };
+    if (!rect || nextZoom <= FIT_ZOOM) return { x: 0, y: 0 };
     const maxX = rect.width * (nextZoom - 1) / 2;
     const maxY = rect.height * (nextZoom - 1) / 2;
     return {
@@ -76,7 +77,7 @@ export function Viewer({ category, item, index, onClose, onNavigate, notify }: V
 
     const rect = canvasRef.current?.getBoundingClientRect();
     let nextOffset = offsetRef.current;
-    if (rect && nextZoom > MIN_ZOOM) {
+    if (rect && nextZoom > FIT_ZOOM) {
       const focusX = (clientX ?? rect.left + rect.width / 2) - (rect.left + rect.width / 2);
       const focusY = (clientY ?? rect.top + rect.height / 2) - (rect.top + rect.height / 2);
       const ratio = nextZoom / currentZoom;
@@ -88,7 +89,7 @@ export function Viewer({ category, item, index, onClose, onNavigate, notify }: V
     commitView(nextZoom, clampOffset(nextOffset, nextZoom));
   };
 
-  const resetView = () => commitView(MIN_ZOOM, { x: 0, y: 0 });
+  const resetView = () => commitView(FIT_ZOOM, { x: 0, y: 0 });
 
   const handleWheel = (event: ReactWheelEvent<HTMLElement>) => {
     event.preventDefault();
@@ -96,7 +97,7 @@ export function Viewer({ category, item, index, onClose, onNavigate, notify }: V
   };
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLElement>) => {
-    if (zoomRef.current <= MIN_ZOOM || event.button !== 0) return;
+    if (zoomRef.current <= FIT_ZOOM || event.button !== 0) return;
     event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
     dragRef.current = {
@@ -161,7 +162,7 @@ export function Viewer({ category, item, index, onClose, onNavigate, notify }: V
         </div>
         <div className="flex items-center gap-1.5">
           <button type="button" className="viewer-icon-button" title="缩小" aria-label="缩小" disabled={zoom <= MIN_ZOOM} onClick={() => applyZoom(zoom - ZOOM_STEP)}><Minus size={18} /></button>
-          <button type="button" className="viewer-icon-button" title="适应窗口" aria-label="适应窗口" disabled={zoom === MIN_ZOOM} onClick={resetView}><Maximize2 size={17} /></button>
+          <button type="button" className="viewer-icon-button" title="适应窗口" aria-label="适应窗口" disabled={Math.abs(zoom - FIT_ZOOM) < 0.001} onClick={resetView}><Maximize2 size={17} /></button>
           <button type="button" className="viewer-icon-button" title="放大" aria-label="放大" disabled={zoom >= MAX_ZOOM} onClick={() => applyZoom(zoom + ZOOM_STEP)}><Plus size={18} /></button>
           <button type="button" className="viewer-icon-button" title="复制图片" aria-label="复制图片" onClick={handleCopy}><Copy size={18} /></button>
           <button type="button" className="viewer-icon-button" title="复制页面链接" aria-label="复制页面链接" onClick={handleCopyLink}><Link size={18} /></button>
@@ -173,13 +174,13 @@ export function Viewer({ category, item, index, onClose, onNavigate, notify }: V
       <button type="button" className="viewer-nav viewer-nav-left" title="上一张" aria-label="上一张" onClick={() => onNavigate(-1)}><ChevronLeft size={28} /></button>
       <figure
         ref={canvasRef}
-        className={`viewer-canvas ${zoom > MIN_ZOOM ? dragging ? 'is-dragging' : 'is-zoomed' : ''}`}
+        className={`viewer-canvas ${zoom > FIT_ZOOM ? dragging ? 'is-dragging' : 'is-zoomed' : ''}`}
         onWheel={handleWheel}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerEnd}
         onPointerCancel={handlePointerEnd}
-        onDoubleClick={(event) => zoom > MIN_ZOOM ? resetView() : applyZoom(2, event.clientX, event.clientY)}
+        onDoubleClick={(event) => Math.abs(zoom - FIT_ZOOM) > 0.001 ? resetView() : applyZoom(2, event.clientX, event.clientY)}
       >
         {loading && <LoaderCircle size={28} className="absolute animate-spin text-zinc-500" />}
         <div
