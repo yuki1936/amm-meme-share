@@ -22,7 +22,7 @@ export function updateRoute(categoryId: string, itemId = '', mode: 'push' | 'rep
 }
 
 async function fetchItemBlob(item: GalleryItem): Promise<Blob> {
-  const response = await fetch(assetUrl(item.src));
+  const response = await fetch(assetUrl(item.src), { mode: 'cors', cache: 'reload' });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   return response.blob();
 }

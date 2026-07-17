@@ -4478,8 +4478,8 @@
           "src": "images/phoebe/phoebe_00001.jpg",
           "thumb": "thumbs/phoebe/phoebe_00001.webp",
           "animated": false,
-          "width": 200,
-          "height": 200
+          "width": 300,
+          "height": 300
         },
         {
           "id": "phoebe_00002",
@@ -4726,8 +4726,8 @@
           "src": "images/phoebe/phoebe_00032.jpg",
           "thumb": "thumbs/phoebe/phoebe_00032.webp",
           "animated": false,
-          "width": 300,
-          "height": 300
+          "width": 200,
+          "height": 200
         }
       ]
     },
@@ -4745,8 +4745,8 @@
           "src": "images/eku/eku_00001.jpg",
           "thumb": "thumbs/eku/eku_00001.webp",
           "animated": false,
-          "width": 532,
-          "height": 520
+          "width": 877,
+          "height": 1288
         },
         {
           "id": "eku_00002",
@@ -4833,8 +4833,8 @@
           "src": "images/eku/eku_00012.jpg",
           "thumb": "thumbs/eku/eku_00012.webp",
           "animated": false,
-          "width": 877,
-          "height": 1288
+          "width": 532,
+          "height": 520
         },
         {
           "id": "eku_00013",

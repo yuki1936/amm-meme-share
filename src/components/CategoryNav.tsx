@@ -97,7 +97,7 @@ export function Sidebar({ categories, activeId, total, brandCover, theme, onSele
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 flex-col border-r border-zinc-200/80 bg-white/95 backdrop-blur-xl lg:flex dark:border-white/8 dark:bg-zinc-950/95">
       <a href={`#${activeId}`} className="flex h-20 items-center gap-3 border-b border-zinc-200/80 px-5 no-underline dark:border-white/8">
-        <img src={assetUrl(brandCover)} alt="" className="size-10 rounded-lg bg-zinc-100 object-cover dark:bg-zinc-800" />
+        <img crossOrigin="anonymous" src={assetUrl(brandCover)} alt="" className="size-10 rounded-lg bg-zinc-100 object-cover dark:bg-zinc-800" />
         <span className="min-w-0">
           <strong className="block truncate text-[15px] font-bold text-zinc-950 dark:text-white">表情包分享</strong>
           <span className="mt-0.5 flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
@@ -122,7 +122,7 @@ export function Sidebar({ categories, activeId, total, brandCover, theme, onSele
               aria-current={active ? 'page' : undefined}
               onClick={() => onSelect(category.id)}
             >
-              <img src={assetUrl(category.cover)} alt="" className="size-11 rounded-md bg-zinc-100 object-cover dark:bg-zinc-800" />
+              <img crossOrigin="anonymous" src={assetUrl(category.cover)} alt="" className="size-11 rounded-md bg-zinc-100 object-cover dark:bg-zinc-800" />
               <span className="min-w-0 flex-1 text-left">
                 <strong className="block truncate text-sm font-semibold text-zinc-800 dark:text-zinc-100">{category.name}</strong>
                 <span className="mt-0.5 block truncate text-[11px] text-zinc-500 dark:text-zinc-400">{category.romanized}</span>

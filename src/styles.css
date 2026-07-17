@@ -414,6 +414,11 @@ a:focus-visible {
   background: rgba(255, 255, 255, 0.12);
 }
 
+.viewer-icon-button:disabled {
+  cursor: default;
+  opacity: 0.32;
+}
+
 .viewer-canvas {
   position: relative;
   display: grid;
@@ -423,6 +428,35 @@ a:focus-visible {
   padding: 1.5rem 5rem;
   place-items: center;
   overflow: hidden;
+  touch-action: none;
+  user-select: none;
+}
+
+.viewer-canvas.is-zoomed {
+  cursor: grab;
+}
+
+.viewer-canvas.is-dragging {
+  cursor: grabbing;
+}
+
+.viewer-media {
+  position: absolute;
+  inset: 1.5rem 5rem;
+  display: grid;
+  place-items: center;
+  transform-origin: center;
+  transition: transform 120ms ease-out;
+  will-change: transform;
+}
+
+.viewer-media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
 }
 
 .viewer-nav {
@@ -496,7 +530,16 @@ a:focus-visible {
   }
 
   .viewer-toolbar {
+    gap: 0;
     padding-left: 0.75rem;
+  }
+
+  .viewer-meta {
+    display: none;
+  }
+
+  .viewer-toolbar > .flex {
+    margin-left: auto;
   }
 
   .viewer-icon-button {
@@ -507,6 +550,10 @@ a:focus-visible {
 
   .viewer-canvas {
     padding: 1rem 0.75rem 5.5rem;
+  }
+
+  .viewer-media {
+    inset: 1rem 0.75rem 5.5rem;
   }
 
   .viewer-nav {
