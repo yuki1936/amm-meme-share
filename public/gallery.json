@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "total": 727,
+  "total": 726,
   "categories": [
     {
       "id": "amamiyakokoro",
@@ -5291,7 +5291,7 @@
       "romanized": "Eku",
       "description": "Eku（日语：エク）是 VRChat 中使用的女性模型形象，由 sep-neko-ya 于 2025 年创作。角色设定为就读于魔法系高中的少女，整体采用带有魔法学园气息的柔美风格。",
       "color": "#a66721",
-      "count": 59,
+      "count": 58,
       "cover": "thumbs/eku/eku_00001.webp",
       "coverRevision": "8a8b2e120738",
       "items": [
@@ -5776,51 +5776,42 @@
           "id": "eku_00054",
           "src": "images/eku/eku_00054.jpg",
           "thumb": "thumbs/eku/eku_00054.webp",
-          "revision": "4df60a0c5276",
-          "animated": false,
-          "width": 924,
-          "height": 1220
-        },
-        {
-          "id": "eku_00055",
-          "src": "images/eku/eku_00055.jpg",
-          "thumb": "thumbs/eku/eku_00055.webp",
           "revision": "c6555eddf861",
           "animated": false,
           "width": 1034,
           "height": 1011
         },
         {
-          "id": "eku_00056",
-          "src": "images/eku/eku_00056.jpg",
-          "thumb": "thumbs/eku/eku_00056.webp",
+          "id": "eku_00055",
+          "src": "images/eku/eku_00055.jpg",
+          "thumb": "thumbs/eku/eku_00055.webp",
           "revision": "ba9e105d3ec8",
           "animated": false,
           "width": 1240,
           "height": 1240
         },
         {
-          "id": "eku_00057",
-          "src": "images/eku/eku_00057.jpg",
-          "thumb": "thumbs/eku/eku_00057.webp",
+          "id": "eku_00056",
+          "src": "images/eku/eku_00056.jpg",
+          "thumb": "thumbs/eku/eku_00056.webp",
           "revision": "218606b30f8d",
           "animated": false,
           "width": 1280,
           "height": 1865
         },
         {
-          "id": "eku_00058",
-          "src": "images/eku/eku_00058.jpg",
-          "thumb": "thumbs/eku/eku_00058.webp",
+          "id": "eku_00057",
+          "src": "images/eku/eku_00057.jpg",
+          "thumb": "thumbs/eku/eku_00057.webp",
           "revision": "0ada0567b0f2",
           "animated": false,
           "width": 1254,
           "height": 1254
         },
         {
-          "id": "eku_00059",
-          "src": "images/eku/eku_00059.jpg",
-          "thumb": "thumbs/eku/eku_00059.webp",
+          "id": "eku_00058",
+          "src": "images/eku/eku_00058.jpg",
+          "thumb": "thumbs/eku/eku_00058.webp",
           "revision": "edd63a0d44b4",
           "animated": false,
           "width": 966,
