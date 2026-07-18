@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { ExternalLink, Info, LibraryBig, Moon, Settings, Sun } from 'lucide-react';
+import { ExternalLink, Info, LibraryBig, Moon, Settings, Sun, WandSparkles } from 'lucide-react';
 import { assetUrl } from '../lib/gallery';
 import type { GalleryCategory, Theme } from '../types';
 
 interface CategoryNavProps {
   categories: GalleryCategory[];
   activeId: string;
+  generatorActive: boolean;
   onSelect: (categoryId: string) => void;
+  onOpenGenerator: () => void;
 }
 
 interface SidebarProps extends CategoryNavProps {
@@ -89,7 +91,7 @@ function UtilityMenu({ theme, mobile = false, onToggleTheme, onAbout }: UtilityM
   );
 }
 
-export function Sidebar({ categories, activeId, total, brandCover, brandCoverRevision, theme, onSelect, onToggleTheme, onAbout }: SidebarProps) {
+export function Sidebar({ categories, activeId, generatorActive, total, brandCover, brandCoverRevision, theme, onSelect, onOpenGenerator, onToggleTheme, onAbout }: SidebarProps) {
   const activeButtonRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     activeButtonRef.current?.scrollIntoView({ block: 'nearest' });
@@ -109,6 +111,20 @@ export function Sidebar({ categories, activeId, total, brandCover, brandCoverRev
       </a>
 
       <nav className="flex-1 space-y-1 overflow-y-auto p-3" aria-label="角色分类">
+        <p className="px-3 pb-2 pt-1 text-[11px] font-semibold text-zinc-400 uppercase">工具</p>
+        <button
+          type="button"
+          className="category-nav-button generator-nav-button"
+          data-active={generatorActive}
+          aria-current={generatorActive ? 'page' : undefined}
+          onClick={onOpenGenerator}
+        >
+          <span className="generator-nav-icon"><WandSparkles size={20} /></span>
+          <span className="min-w-0 flex-1 text-left">
+            <strong className="block truncate text-sm font-semibold">表情包生成器</strong>
+            <span className="mt-0.5 block truncate text-[11px] opacity-65">Meme Studio</span>
+          </span>
+        </button>
         <p className="px-3 pb-2 pt-1 text-[11px] font-semibold text-zinc-400 uppercase">角色分类</p>
         {categories.map((category) => {
           const active = category.id === activeId;
@@ -143,7 +159,7 @@ export function Sidebar({ categories, activeId, total, brandCover, brandCoverRev
   );
 }
 
-export function MobileCategories({ categories, activeId, onSelect }: CategoryNavProps) {
+export function MobileCategories({ categories, activeId, generatorActive, onSelect, onOpenGenerator }: CategoryNavProps) {
   const activeButtonRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     activeButtonRef.current?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
@@ -151,6 +167,16 @@ export function MobileCategories({ categories, activeId, onSelect }: CategoryNav
 
   return (
     <nav className="mobile-category-strip" aria-label="角色分类">
+      <button
+        type="button"
+        className="mobile-category-button mobile-generator-button"
+        data-active={generatorActive}
+        aria-current={generatorActive ? 'page' : undefined}
+        onClick={onOpenGenerator}
+      >
+        <WandSparkles size={14} />
+        <span>制作</span>
+      </button>
       {categories.map((category) => {
         const active = category.id === activeId;
         return (
@@ -173,7 +199,7 @@ export function MobileCategories({ categories, activeId, onSelect }: CategoryNav
   );
 }
 
-export function MobileUtilities({ theme, onToggleTheme, onAbout }: Omit<SidebarProps, keyof CategoryNavProps | 'total' | 'brandCover' | 'brandCoverRevision'>) {
+export function MobileUtilities({ theme, onToggleTheme, onAbout }: Omit<SidebarProps, keyof CategoryNavProps | 'total' | 'brandCover' | 'brandCoverRevision' | 'generatorActive' | 'onOpenGenerator'>) {
   return (
     <div className="mobile-utilities lg:hidden">
       <UtilityMenu mobile theme={theme} onToggleTheme={onToggleTheme} onAbout={onAbout} />

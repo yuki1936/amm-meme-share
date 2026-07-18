@@ -52,6 +52,10 @@ rclone check media/thumbs r2:amm-meme-share/thumbs
 
 R2 存储桶需要允许网站域名发起跨域 `GET` 和 `HEAD` 请求，以支持复制和下载功能。API 凭据只保存在本机 rclone 配置中，不得放入代码库。
 
+## 表情包生成器
+
+站内生成器通过 `#generator` 访问，支持在固定气泡区域内添加文字或上传图片并导出 PNG。模板保存在 R2 的 `meme-generator/templates/` 前缀下，模板 URL 使用内容版本参数，替换模板时需同步更新 `src/components/MemeGenerator.tsx` 中对应的版本值。
+
 ## 图片结构
 
 分类目录使用小写 ASCII slug，文件使用分类前缀和五位稳定编号：

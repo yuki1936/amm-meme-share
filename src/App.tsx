@@ -3,6 +3,7 @@ import { ArrowDownNarrowWide, ArrowUpNarrowWide, Shuffle } from 'lucide-react';
 import { AboutDialog } from './components/AboutDialog';
 import { MobileCategories, MobileUtilities, Sidebar } from './components/CategoryNav';
 import { GalleryMasonry } from './components/GalleryMasonry';
+import { MemeGenerator } from './components/MemeGenerator';
 import { Toast } from './components/Toast';
 import { Viewer } from './components/Viewer';
 import { assetUrl, parseRoute, updateRoute } from './lib/gallery';
@@ -104,6 +105,7 @@ export default function App() {
   const [loadError, setLoadError] = useState('');
   const [activeId, setActiveId] = useState('');
   const [viewerId, setViewerId] = useState('');
+  const [generatorOpen, setGeneratorOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(0);
   const [sortOrder, setSortOrder] = useState<SortOrder>(getSavedSortOrder);
   const [randomSeed, setRandomSeed] = useState(() => Math.floor(Math.random() * 0xffffffff));
@@ -138,11 +140,18 @@ export default function App() {
     if (!manifest) return;
     const route = parseRoute();
     const savedId = localStorage.getItem('gallery-category') ?? '';
+    if (route.categoryId === 'generator') {
+      setGeneratorOpen(true);
+      setViewerId('');
+      setActiveId((current) => current || savedId || manifest.categories[0].id);
+      return;
+    }
     const category = manifest.categories.find((item) => item.id === route.categoryId)
       ?? manifest.categories.find((item) => item.id === savedId)
       ?? manifest.categories[0];
     const validViewerId = category.items.some((item) => item.id === route.itemId) ? route.itemId : '';
     const items = orderItems(category.items, sortOrder, randomSeed);
+    setGeneratorOpen(false);
     setActiveId(category.id);
     setViewerId(validViewerId);
     setVisibleCount(getVisibleCountForScreens(items));
@@ -215,12 +224,20 @@ export default function App() {
     const category = manifest?.categories.find((item) => item.id === categoryId);
     const items = category ? orderItems(category.items, sortOrder, randomSeed) : [];
     setActiveId(categoryId);
+    setGeneratorOpen(false);
     setViewerId('');
     setVisibleCount(getVisibleCountForScreens(items));
     localStorage.setItem('gallery-category', categoryId);
     updateRoute(categoryId);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [manifest, randomSeed, sortOrder]);
+
+  const openGenerator = useCallback(() => {
+    setGeneratorOpen(true);
+    setViewerId('');
+    updateRoute('generator');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const openItem = useCallback((item: GalleryItem) => {
     if (!activeCategory) return;
@@ -261,20 +278,28 @@ export default function App() {
     <div className="min-h-screen bg-[#f7f8f8] text-zinc-900 antialiased dark:bg-[#111516] dark:text-zinc-100" style={accentStyle}>
       <Sidebar
         categories={manifest.categories}
-        activeId={activeCategory.id}
+        activeId={generatorOpen ? '' : activeCategory.id}
+        generatorActive={generatorOpen}
         total={manifest.total}
         brandCover={brandCover || manifest.categories[0].cover}
         brandCoverRevision={brandCoverRevision || manifest.categories[0].coverRevision}
         theme={theme}
         onSelect={selectCategory}
+        onOpenGenerator={openGenerator}
         onToggleTheme={toggleTheme}
         onAbout={() => setAboutOpen(true)}
       />
 
       <div className="min-h-screen lg:pl-72">
-        <MobileCategories categories={manifest.categories} activeId={activeCategory.id} onSelect={selectCategory} />
+        <MobileCategories
+          categories={manifest.categories}
+          activeId={generatorOpen ? '' : activeCategory.id}
+          generatorActive={generatorOpen}
+          onSelect={selectCategory}
+          onOpenGenerator={openGenerator}
+        />
 
-        <main className="mx-auto max-w-[1800px] px-3 pb-20 pt-7 sm:px-5 lg:px-8 lg:pt-10">
+        {generatorOpen ? <MemeGenerator /> : <main className="mx-auto max-w-[1800px] px-3 pb-20 pt-7 sm:px-5 lg:px-8 lg:pt-10">
           <section className="collection-heading">
             <div className="min-w-0">
               <p className="category-eyebrow">{activeCategory.romanized}</p>
@@ -300,7 +325,7 @@ export default function App() {
           {visibleItems.length < orderedItems.length && (
             <div ref={loadSentinelRef} className="h-px" aria-hidden="true" />
           )}
-        </main>
+        </main>}
       </div>
 
       <MobileUtilities
@@ -309,7 +334,7 @@ export default function App() {
         onAbout={() => setAboutOpen(true)}
       />
 
-      {viewerItem && (
+      {!generatorOpen && viewerItem && (
         <Viewer
           category={activeCategory}
           item={viewerItem}
