@@ -701,15 +701,6 @@ a:focus-visible {
   aspect-ratio: 1.3;
   object-fit: cover;
 }
-.studio-template-button span {
-  display: block;
-  overflow: hidden;
-  padding: 0.4rem 0.3rem;
-  font-size: 0.65rem;
-  font-weight: 700;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 .studio-template-button svg {
   position: absolute;
   top: 0.3rem;

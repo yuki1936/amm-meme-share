@@ -11,7 +11,6 @@ export interface NormalizedRect {
 
 export interface MemeTemplate {
   id: string;
-  name: string;
   source: string;
   bubble: NormalizedRect;
   clearBubble: boolean;

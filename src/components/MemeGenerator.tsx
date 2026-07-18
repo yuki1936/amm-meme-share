@@ -230,7 +230,7 @@ export function MemeGenerator() {
           <span className="studio-title-icon"><ImagePlus size={19} /></span>
           <div>
             <h1>表情包生成器</h1>
-            <p>{template.name}{templateImage ? ` · ${templateImage.naturalWidth} × ${templateImage.naturalHeight}` : ''}</p>
+            {templateImage && <p>{templateImage.naturalWidth} × {templateImage.naturalHeight}</p>}
           </div>
         </div>
         <div className="studio-header-actions">
@@ -299,12 +299,11 @@ export function MemeGenerator() {
                   type="button"
                   className="studio-template-button"
                   data-active={index === templateIndex}
-                  aria-label={`选择${item.name}`}
+                  aria-label={`选择模板 ${index + 1}`}
                   aria-pressed={index === templateIndex}
                   onClick={() => setTemplateIndex(index)}
                 >
                   <img src={item.source} crossOrigin="anonymous" alt="" />
-                  <span>{item.name}</span>
                   {index === templateIndex && <Check size={15} />}
                 </button>
               ))}
