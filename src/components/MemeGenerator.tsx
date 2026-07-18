@@ -12,6 +12,7 @@ import {
   AlignLeft,
   AlignRight,
   Check,
+  Copy,
   Download,
   Grid2X2,
   ImagePlus,
@@ -172,26 +173,49 @@ export function MemeGenerator() {
     setNotice('已恢复默认设置');
   };
 
-  const download = () => {
-    if (!templateImage) return;
+  const createOutputBlob = (): Promise<Blob> => new Promise((resolve, reject) => {
+    if (!templateImage) {
+      reject(new Error('Template is not ready'));
+      return;
+    }
     const output = document.createElement('canvas');
     renderMeme(output, { template, templateImage, overlayImage, editor, showGuide: false });
     try {
       output.toBlob((blob) => {
-        if (!blob) {
-          setNotice('PNG 生成失败');
-          return;
-        }
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `${template.id}-${Date.now()}.png`;
-        link.click();
-        window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
-        setNotice('PNG 已开始下载');
+        if (blob) resolve(blob);
+        else reject(new Error('Unable to create PNG'));
       }, 'image/png');
+    } catch (error) {
+      reject(error);
+    }
+  });
+
+  const copyImage = async () => {
+    if (!navigator.clipboard?.write || typeof ClipboardItem === 'undefined') {
+      setNotice('当前浏览器不支持复制图片，请使用下载');
+      return;
+    }
+    try {
+      const blob = await createOutputBlob();
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      setNotice('图片已复制');
     } catch {
-      setNotice('导出失败，请刷新后重试');
+      setNotice('复制失败，请允许剪贴板权限后重试');
+    }
+  };
+
+  const download = async () => {
+    try {
+      const blob = await createOutputBlob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${template.id}-${Date.now()}.png`;
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+      setNotice('PNG 已开始下载');
+    } catch {
+      setNotice('下载失败，请刷新后重试');
     }
   };
 
@@ -234,12 +258,15 @@ export function MemeGenerator() {
           </div>
         </div>
         <div className="studio-header-actions">
-          <button type="button" className="studio-icon-button" title="恢复默认设置" aria-label="恢复默认设置" onClick={resetEditor}>
+          <button type="button" className="studio-icon-button studio-reset-button" title="恢复默认设置" aria-label="恢复默认设置" onClick={resetEditor}>
             <RotateCcw size={17} />
           </button>
-          <button type="button" className="studio-export-button" disabled={!templateImage} onClick={download}>
+          <button type="button" className="studio-copy-button" disabled={!templateImage} onClick={() => void copyImage()}>
+            <Copy size={17} />
+            复制图片
+          </button>
+          <button type="button" className="studio-icon-button" title="下载 PNG" aria-label="下载 PNG" disabled={!templateImage} onClick={() => void download()}>
             <Download size={17} />
-            导出 PNG
           </button>
         </div>
       </header>
