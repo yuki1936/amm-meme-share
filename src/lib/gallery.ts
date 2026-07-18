@@ -2,9 +2,10 @@ import type { GalleryItem } from '../types';
 
 const assetBaseUrl = import.meta.env.VITE_ASSET_BASE_URL?.replace(/\/$/, '') ?? '';
 
-export function assetUrl(path: string): string {
+export function assetUrl(path: string, revision?: string): string {
   const encodedPath = path.split('/').map(encodeURIComponent).join('/');
-  return `${assetBaseUrl}/${encodedPath}`;
+  const version = revision ? `?v=${encodeURIComponent(revision)}` : '';
+  return `${assetBaseUrl}/${encodedPath}${version}`;
 }
 
 export function parseRoute(): { categoryId: string; itemId: string } {
@@ -22,7 +23,7 @@ export function updateRoute(categoryId: string, itemId = '', mode: 'push' | 'rep
 }
 
 async function fetchItemBlob(item: GalleryItem): Promise<Blob> {
-  const response = await fetch(assetUrl(item.src), { mode: 'cors', cache: 'reload' });
+  const response = await fetch(assetUrl(item.src, item.revision), { mode: 'cors', cache: 'reload' });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   return response.blob();
 }

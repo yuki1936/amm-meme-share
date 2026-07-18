@@ -1,4 +1,5 @@
 const fs = require('fs');
+const crypto = require('crypto');
 const path = require('path');
 const sharp = require('sharp');
 
@@ -69,16 +70,24 @@ async function buildCategory(category) {
     const id = filename.replace(/\.[^/.]+$/, '');
     const src = `images/${category.id}/${filename}`;
     const thumb = `thumbs/${category.id}/${id}.webp`;
-    if (!fs.existsSync(path.join(mediaDir, thumb))) {
+    const sourcePath = path.join(mediaDir, src);
+    const thumbPath = path.join(mediaDir, thumb);
+    if (!fs.existsSync(thumbPath)) {
       throw new Error(`Missing thumbnail: ${thumb}`);
     }
-    const metadata = await sharp(path.join(mediaDir, src), { animated: true }).metadata();
+    const metadata = await sharp(sourcePath, { animated: true }).metadata();
     const width = metadata.width || 1;
     const height = metadata.pageHeight || metadata.height || 1;
+    const revision = crypto.createHash('sha256')
+      .update(fs.readFileSync(sourcePath))
+      .update(fs.readFileSync(thumbPath))
+      .digest('hex')
+      .slice(0, 12);
     return {
       id,
       src,
       thumb,
+      revision,
       animated: /\.gif$/i.test(filename),
       width,
       height,
@@ -89,6 +98,7 @@ async function buildCategory(category) {
     ...category,
     count: items.length,
     cover: items[0]?.thumb || null,
+    coverRevision: items[0]?.revision || null,
     items,
   };
 }
@@ -98,7 +108,7 @@ async function main() {
     discoverCategories(readCategoryConfig()).map(buildCategory),
   );
 const gallery = {
-  version: 1,
+  version: 2,
   total: categories.reduce((sum, category) => sum + category.count, 0),
   categories,
 };

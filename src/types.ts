@@ -2,6 +2,7 @@ export interface GalleryItem {
   id: string;
   src: string;
   thumb: string;
+  revision: string;
   animated: boolean;
   width: number;
   height: number;
@@ -15,6 +16,7 @@ export interface GalleryCategory {
   color: string;
   count: number;
   cover: string;
+  coverRevision: string;
   items: GalleryItem[];
 }
 

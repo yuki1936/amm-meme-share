@@ -110,6 +110,7 @@ export default function App() {
   const [aboutOpen, setAboutOpen] = useState(false);
   const [toast, setToast] = useState('');
   const [brandCover, setBrandCover] = useState('');
+  const [brandCoverRevision, setBrandCoverRevision] = useState('');
   const loadSentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -123,9 +124,11 @@ export default function App() {
         const allItems = data.categories.flatMap((category) => category.items);
         const randomItem = allItems[Math.floor(Math.random() * allItems.length)];
         const randomThumb = randomItem?.thumb ?? data.categories[0].cover;
+        const randomRevision = randomItem?.revision ?? data.categories[0].coverRevision;
         setBrandCover(randomThumb);
+        setBrandCoverRevision(randomRevision);
         const favicon = document.querySelector<HTMLLinkElement>('#favicon');
-        if (favicon) favicon.href = assetUrl(randomThumb);
+        if (favicon) favicon.href = assetUrl(randomThumb, randomRevision);
         setManifest(data);
       })
       .catch((error: unknown) => setLoadError(error instanceof Error ? error.message : 'Unknown error'));
@@ -261,6 +264,7 @@ export default function App() {
         activeId={activeCategory.id}
         total={manifest.total}
         brandCover={brandCover || manifest.categories[0].cover}
+        brandCoverRevision={brandCoverRevision || manifest.categories[0].coverRevision}
         theme={theme}
         onSelect={selectCategory}
         onToggleTheme={toggleTheme}

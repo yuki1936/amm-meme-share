@@ -189,7 +189,7 @@ export function Viewer({ category, item, index, onClose, onNavigate, notify }: V
         >
           <img
             key={item.id}
-            src={assetUrl(item.src)}
+            src={assetUrl(item.src, item.revision)}
             alt={`${category.name} 表情`}
             draggable={false}
             className={`h-full w-full select-none object-contain transition-opacity duration-200 ${loading ? 'opacity-0' : 'opacity-100'}`}

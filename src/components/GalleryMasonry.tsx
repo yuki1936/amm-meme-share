@@ -29,7 +29,7 @@ function MemeTile({ item, categoryName, priority, onOpen }: { item: GalleryItem;
             <span className="absolute inset-0 grid place-items-center text-zinc-400"><ImageOff size={22} /></span>
           ) : (
             <img
-              src={assetUrl(item.thumb)}
+              src={assetUrl(item.thumb, item.revision)}
               alt={`${categoryName} 表情`}
               width={item.width}
               height={item.height}
