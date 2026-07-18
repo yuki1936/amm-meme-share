@@ -34,6 +34,13 @@
       "romanized": "Magical Girl Witch Trials",
       "description": "《魔法少女的魔女审判》（日语：魔法少女ノ魔女裁判，英语：Magical Girl Witch Trials）是由 Acacia 制作的魔法议论悬疑冒险游戏。13 名拥有魔法的少女被囚禁在孤岛的牢屋敷中，必须通过魔女审判找出潜藏其中的“魔女”。",
       "color": "#9f3650"
+    },
+    {
+      "id": "neuro-evil",
+      "name": "Neuro & Evil",
+      "romanized": "Neuro-sama / Evil Neuro",
+      "description": "Neuro-sama 与 Evil Neuro 表情包合集。",
+      "color": "#6f5a9a"
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "total": 726,
+  "total": 769,
   "categories": [
     {
       "id": "amamiyakokoro",
@@ -6593,6 +6593,405 @@
           "animated": false,
           "width": 1254,
           "height": 1254
+        }
+      ]
+    },
+    {
+      "id": "neuro-evil",
+      "name": "Neuro & Evil",
+      "romanized": "Neuro-sama / Evil Neuro",
+      "description": "Neuro-sama 与 Evil Neuro 表情包合集。",
+      "color": "#6f5a9a",
+      "count": 43,
+      "cover": "thumbs/neuro-evil/neuro-evil_00001.webp",
+      "coverRevision": "951cf770a4b5",
+      "items": [
+        {
+          "id": "neuro-evil_00001",
+          "src": "images/neuro-evil/neuro-evil_00001.gif",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00001.webp",
+          "revision": "951cf770a4b5",
+          "animated": true,
+          "width": 600,
+          "height": 600
+        },
+        {
+          "id": "neuro-evil_00002",
+          "src": "images/neuro-evil/neuro-evil_00002.gif",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00002.webp",
+          "revision": "a74b14345317",
+          "animated": true,
+          "width": 846,
+          "height": 846
+        },
+        {
+          "id": "neuro-evil_00003",
+          "src": "images/neuro-evil/neuro-evil_00003.jpg",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00003.webp",
+          "revision": "9dacff549833",
+          "animated": false,
+          "width": 733,
+          "height": 888
+        },
+        {
+          "id": "neuro-evil_00004",
+          "src": "images/neuro-evil/neuro-evil_00004.gif",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00004.webp",
+          "revision": "66bddb02c61d",
+          "animated": true,
+          "width": 390,
+          "height": 447
+        },
+        {
+          "id": "neuro-evil_00005",
+          "src": "images/neuro-evil/neuro-evil_00005.gif",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00005.webp",
+          "revision": "8066b717084e",
+          "animated": true,
+          "width": 400,
+          "height": 479
+        },
+        {
+          "id": "neuro-evil_00006",
+          "src": "images/neuro-evil/neuro-evil_00006.jpg",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00006.webp",
+          "revision": "ec319f380661",
+          "animated": false,
+          "width": 825,
+          "height": 880
+        },
+        {
+          "id": "neuro-evil_00007",
+          "src": "images/neuro-evil/neuro-evil_00007.gif",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00007.webp",
+          "revision": "3e7fef7a0540",
+          "animated": true,
+          "width": 440,
+          "height": 400
+        },
+        {
+          "id": "neuro-evil_00008",
+          "src": "images/neuro-evil/neuro-evil_00008.gif",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00008.webp",
+          "revision": "cb7ef9f00977",
+          "animated": true,
+          "width": 200,
+          "height": 200
+        },
+        {
+          "id": "neuro-evil_00009",
+          "src": "images/neuro-evil/neuro-evil_00009.png",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00009.webp",
+          "revision": "32061702ad43",
+          "animated": false,
+          "width": 465,
+          "height": 527
+        },
+        {
+          "id": "neuro-evil_00010",
+          "src": "images/neuro-evil/neuro-evil_00010.png",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00010.webp",
+          "revision": "74709296f069",
+          "animated": false,
+          "width": 458,
+          "height": 536
+        },
+        {
+          "id": "neuro-evil_00011",
+          "src": "images/neuro-evil/neuro-evil_00011.jpg",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00011.webp",
+          "revision": "8d312e5d0ce3",
+          "animated": false,
+          "width": 580,
+          "height": 798
+        },
+        {
+          "id": "neuro-evil_00012",
+          "src": "images/neuro-evil/neuro-evil_00012.jpg",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00012.webp",
+          "revision": "d60ee218b7c6",
+          "animated": false,
+          "width": 455,
+          "height": 445
+        },
+        {
+          "id": "neuro-evil_00013",
+          "src": "images/neuro-evil/neuro-evil_00013.jpg",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00013.webp",
+          "revision": "db8395c9ce02",
+          "animated": false,
+          "width": 720,
+          "height": 539
+        },
+        {
+          "id": "neuro-evil_00014",
+          "src": "images/neuro-evil/neuro-evil_00014.gif",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00014.webp",
+          "revision": "63c85d4c9ea6",
+          "animated": true,
+          "width": 250,
+          "height": 250
+        },
+        {
+          "id": "neuro-evil_00015",
+          "src": "images/neuro-evil/neuro-evil_00015.jpg",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00015.webp",
+          "revision": "4895dde2ef4e",
+          "animated": false,
+          "width": 952,
+          "height": 902
+        },
+        {
+          "id": "neuro-evil_00016",
+          "src": "images/neuro-evil/neuro-evil_00016.gif",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00016.webp",
+          "revision": "5d51e90371f4",
+          "animated": true,
+          "width": 100,
+          "height": 100
+        },
+        {
+          "id": "neuro-evil_00017",
+          "src": "images/neuro-evil/neuro-evil_00017.jpg",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00017.webp",
+          "revision": "8952ca119067",
+          "animated": false,
+          "width": 960,
+          "height": 540
+        },
+        {
+          "id": "neuro-evil_00018",
+          "src": "images/neuro-evil/neuro-evil_00018.jpg",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00018.webp",
+          "revision": "2e7c48ca8a99",
+          "animated": false,
+          "width": 764,
+          "height": 808
+        },
+        {
+          "id": "neuro-evil_00019",
+          "src": "images/neuro-evil/neuro-evil_00019.gif",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00019.webp",
+          "revision": "5586651eedd6",
+          "animated": true,
+          "width": 240,
+          "height": 240
+        },
+        {
+          "id": "neuro-evil_00020",
+          "src": "images/neuro-evil/neuro-evil_00020.jpg",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00020.webp",
+          "revision": "904e2289dbbd",
+          "animated": false,
+          "width": 1200,
+          "height": 1000
+        },
+        {
+          "id": "neuro-evil_00021",
+          "src": "images/neuro-evil/neuro-evil_00021.gif",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00021.webp",
+          "revision": "9c88267310a3",
+          "animated": true,
+          "width": 587,
+          "height": 643
+        },
+        {
+          "id": "neuro-evil_00022",
+          "src": "images/neuro-evil/neuro-evil_00022.jpg",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00022.webp",
+          "revision": "2edfa25832f2",
+          "animated": false,
+          "width": 960,
+          "height": 1102
+        },
+        {
+          "id": "neuro-evil_00023",
+          "src": "images/neuro-evil/neuro-evil_00023.gif",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00023.webp",
+          "revision": "6ec353eee652",
+          "animated": true,
+          "width": 240,
+          "height": 240
+        },
+        {
+          "id": "neuro-evil_00024",
+          "src": "images/neuro-evil/neuro-evil_00024.gif",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00024.webp",
+          "revision": "d544e615aeea",
+          "animated": true,
+          "width": 240,
+          "height": 240
+        },
+        {
+          "id": "neuro-evil_00025",
+          "src": "images/neuro-evil/neuro-evil_00025.gif",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00025.webp",
+          "revision": "f7236a2940e8",
+          "animated": true,
+          "width": 320,
+          "height": 320
+        },
+        {
+          "id": "neuro-evil_00026",
+          "src": "images/neuro-evil/neuro-evil_00026.jpg",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00026.webp",
+          "revision": "fea2f57b69d3",
+          "animated": false,
+          "width": 1260,
+          "height": 1260
+        },
+        {
+          "id": "neuro-evil_00027",
+          "src": "images/neuro-evil/neuro-evil_00027.jpg",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00027.webp",
+          "revision": "dfd2414eeae3",
+          "animated": false,
+          "width": 670,
+          "height": 672
+        },
+        {
+          "id": "neuro-evil_00028",
+          "src": "images/neuro-evil/neuro-evil_00028.jpg",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00028.webp",
+          "revision": "8108ff4750bc",
+          "animated": false,
+          "width": 1000,
+          "height": 1000
+        },
+        {
+          "id": "neuro-evil_00029",
+          "src": "images/neuro-evil/neuro-evil_00029.gif",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00029.webp",
+          "revision": "30ee8e9029da",
+          "animated": true,
+          "width": 240,
+          "height": 240
+        },
+        {
+          "id": "neuro-evil_00030",
+          "src": "images/neuro-evil/neuro-evil_00030.gif",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00030.webp",
+          "revision": "df600aebe2e5",
+          "animated": true,
+          "width": 400,
+          "height": 400
+        },
+        {
+          "id": "neuro-evil_00031",
+          "src": "images/neuro-evil/neuro-evil_00031.jpg",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00031.webp",
+          "revision": "4726dc2c7e95",
+          "animated": false,
+          "width": 1010,
+          "height": 1010
+        },
+        {
+          "id": "neuro-evil_00032",
+          "src": "images/neuro-evil/neuro-evil_00032.jpg",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00032.webp",
+          "revision": "d3659b15663e",
+          "animated": false,
+          "width": 1216,
+          "height": 832
+        },
+        {
+          "id": "neuro-evil_00033",
+          "src": "images/neuro-evil/neuro-evil_00033.jpg",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00033.webp",
+          "revision": "31d1baf77111",
+          "animated": false,
+          "width": 892,
+          "height": 1112
+        },
+        {
+          "id": "neuro-evil_00034",
+          "src": "images/neuro-evil/neuro-evil_00034.jpg",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00034.webp",
+          "revision": "b126d3e689be",
+          "animated": false,
+          "width": 1334,
+          "height": 1112
+        },
+        {
+          "id": "neuro-evil_00035",
+          "src": "images/neuro-evil/neuro-evil_00035.png",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00035.webp",
+          "revision": "fd6676094d1e",
+          "animated": false,
+          "width": 648,
+          "height": 648
+        },
+        {
+          "id": "neuro-evil_00036",
+          "src": "images/neuro-evil/neuro-evil_00036.png",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00036.webp",
+          "revision": "cc8bf6f03721",
+          "animated": false,
+          "width": 1080,
+          "height": 1104
+        },
+        {
+          "id": "neuro-evil_00037",
+          "src": "images/neuro-evil/neuro-evil_00037.gif",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00037.webp",
+          "revision": "24fc7be856d7",
+          "animated": true,
+          "width": 430,
+          "height": 580
+        },
+        {
+          "id": "neuro-evil_00038",
+          "src": "images/neuro-evil/neuro-evil_00038.gif",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00038.webp",
+          "revision": "4454de230459",
+          "animated": true,
+          "width": 128,
+          "height": 128
+        },
+        {
+          "id": "neuro-evil_00039",
+          "src": "images/neuro-evil/neuro-evil_00039.gif",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00039.webp",
+          "revision": "2aee09f7c9b4",
+          "animated": true,
+          "width": 128,
+          "height": 128
+        },
+        {
+          "id": "neuro-evil_00040",
+          "src": "images/neuro-evil/neuro-evil_00040.jpg",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00040.webp",
+          "revision": "a6c2d2248fba",
+          "animated": false,
+          "width": 1163,
+          "height": 1200
+        },
+        {
+          "id": "neuro-evil_00041",
+          "src": "images/neuro-evil/neuro-evil_00041.gif",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00041.webp",
+          "revision": "713734c064f0",
+          "animated": true,
+          "width": 500,
+          "height": 500
+        },
+        {
+          "id": "neuro-evil_00042",
+          "src": "images/neuro-evil/neuro-evil_00042.gif",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00042.webp",
+          "revision": "fb763a7520a5",
+          "animated": true,
+          "width": 320,
+          "height": 320
+        },
+        {
+          "id": "neuro-evil_00043",
+          "src": "images/neuro-evil/neuro-evil_00043.jpg",
+          "thumb": "thumbs/neuro-evil/neuro-evil_00043.webp",
+          "revision": "f16479d59cb0",
+          "animated": false,
+          "width": 960,
+          "height": 960
         }
       ]
     }
