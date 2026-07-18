@@ -54,7 +54,7 @@ R2 存储桶需要允许网站域名发起跨域 `GET` 和 `HEAD` 请求，以�
 
 ## 表情包生成器
 
-站内生成器通过 `#generator` 访问，支持在固定气泡区域内添加文字或上传图片并导出 PNG。模板保存在 R2 的 `meme-generator/templates/` 前缀下，模板 URL 使用内容版本参数，替换模板时需同步更新 `src/components/MemeGenerator.tsx` 中对应的版本值。
+站内生成器通过侧栏或 `#generator` 访问，支持文字排版、图片拖放与定位、预览缩放并导出 PNG。模板底图位于 `public/studio/templates/`，模板名称和气泡区域集中配置在 `src/features/meme-generator/templates.ts`，Canvas 绘制逻辑位于同目录的 `render.ts`。
 
 ## 图片结构
 

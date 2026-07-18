@@ -1,424 +1,382 @@
-import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type DragEvent,
+  type PointerEvent,
+} from 'react';
 import {
   AlignCenter,
   AlignLeft,
   AlignRight,
+  Check,
   Download,
+  Grid2X2,
   ImagePlus,
+  Maximize2,
+  Minus,
+  Plus,
   RotateCcw,
+  Trash2,
   Type,
   Upload,
 } from 'lucide-react';
+import { loadCanvasImage, renderMeme } from '../features/meme-generator/render';
+import { memeTemplates } from '../features/meme-generator/templates';
+import type { MemeEditorState } from '../features/meme-generator/types';
 
-const templateBaseUrl = `${import.meta.env.VITE_ASSET_BASE_URL?.replace(/\/$/, '') ?? 'https://pub-94ae1456da3d4179a4b9f3543f91240d.r2.dev'}/meme-generator/templates`;
-const templateOne = `${templateBaseUrl}/mutsumi-thought-bubble.png?v=cf2d7c241c46-cors`;
-const templateTwo = `${templateBaseUrl}/mutsumi-speech-bubble.png?v=731a14d9709b-cors`;
-const templateThree = `${templateBaseUrl}/mutsumi-thought-closeup.png?v=d01bdf31ff35-cors`;
+const defaultEditor: MemeEditorState = {
+  mode: 'text',
+  text: '我没意见',
+  fontSize: 44,
+  lineHeight: 1.18,
+  align: 'center',
+  autoFit: true,
+  textColor: '#111111',
+  textOffsetX: 0,
+  textOffsetY: 0,
+  outline: true,
+  clearBubble: false,
+  imageFit: 'contain',
+  imageScale: 100,
+  imageOffsetX: 0,
+  imageOffsetY: 0,
+};
 
-interface BubbleBox {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-interface MemeTemplate {
-  name: string;
-  source: string;
-  bubble: BubbleBox;
-  clearBubble: boolean;
-}
-
-type ContentMode = 'text' | 'image';
-type TextAlign = 'left' | 'center' | 'right';
-type ImageFit = 'contain' | 'cover';
-
-const templates: MemeTemplate[] = [
-  {
-    name: '想法气泡',
-    source: templateOne,
-    bubble: { x: 0.08, y: 0.12, width: 0.44, height: 0.22 },
-    clearBubble: false,
-  },
-  {
-    name: '对话气泡',
-    source: templateTwo,
-    bubble: { x: 0.75, y: 0.075, width: 0.22, height: 0.16 },
-    clearBubble: false,
-  },
-  {
-    name: '大字气泡',
-    source: templateThree,
-    bubble: { x: 0.085, y: 0.11, width: 0.43, height: 0.22 },
-    clearBubble: false,
-  },
-];
-
-const fontFamily = '"Microsoft YaHei", "PingFang SC", system-ui, sans-serif';
-
-function loadImage(source: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    image.crossOrigin = 'anonymous';
-    image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error(`Unable to load image: ${source}`));
-    image.src = source;
-  });
-}
-
-function roundedRect(context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
-  const safeRadius = Math.min(radius, width / 2, height / 2);
-  context.beginPath();
-  context.roundRect(x, y, width, height, safeRadius);
-}
-
-function splitToken(context: CanvasRenderingContext2D, token: string, maxWidth: number): string[] {
-  const pieces: string[] = [];
-  let current = '';
-  for (const character of token) {
-    const candidate = current + character;
-    if (current && context.measureText(candidate).width > maxWidth) {
-      pieces.push(current);
-      current = character;
-    } else {
-      current = candidate;
-    }
-  }
-  if (current) pieces.push(current);
-  return pieces;
-}
-
-function wrapText(context: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
-  const normalized = text.replace(/\r\n/g, '\n').trim();
-  if (!normalized) return [''];
-  const lines: string[] = [];
-
-  for (const paragraph of normalized.split('\n')) {
-    const tokens = paragraph.match(/[A-Za-z0-9_@#./:-]+|\s+|./g) ?? [paragraph];
-    let line = '';
-    for (const token of tokens) {
-      if (/^\s+$/.test(token) && !line) continue;
-      const candidate = line + token;
-      if (context.measureText(candidate).width <= maxWidth) {
-        line = candidate;
-        continue;
-      }
-      if (line) lines.push(line.trimEnd());
-      line = '';
-      if (context.measureText(token).width > maxWidth) {
-        const pieces = splitToken(context, token.trim(), maxWidth);
-        lines.push(...pieces.slice(0, -1));
-        line = pieces.at(-1) ?? '';
-      } else {
-        line = token.trimStart();
-      }
-    }
-    lines.push(line.trimEnd());
-  }
-  return lines;
+function RangeField({
+  label,
+  value,
+  display,
+  min,
+  max,
+  step,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  display?: string;
+  min: number;
+  max: number;
+  step?: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <label className="studio-range-field">
+      <span><span>{label}</span><output>{display ?? value}</output></span>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(event) => onChange(Number(event.target.value))}
+      />
+    </label>
+  );
 }
 
 export function MemeGenerator() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const uploadUrlRef = useRef('');
+  const dragStartRef = useRef<{ x: number; y: number; offsetX: number; offsetY: number } | null>(null);
   const [templateIndex, setTemplateIndex] = useState(0);
   const [templateImage, setTemplateImage] = useState<HTMLImageElement | null>(null);
-  const [templateError, setTemplateError] = useState(false);
-  const [mode, setMode] = useState<ContentMode>('text');
-  const [text, setText] = useState('我没意见');
-  const [fontSize, setFontSize] = useState(44);
-  const [lineHeight, setLineHeight] = useState(1.18);
-  const [align, setAlign] = useState<TextAlign>('center');
-  const [autoFit, setAutoFit] = useState(true);
-  const [textColor, setTextColor] = useState('#111111');
-  const [clearBubble, setClearBubble] = useState(templates[0].clearBubble);
+  const [templateStatus, setTemplateStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [editor, setEditor] = useState<MemeEditorState>(defaultEditor);
   const [overlayImage, setOverlayImage] = useState<HTMLImageElement | null>(null);
   const [overlayName, setOverlayName] = useState('');
-  const [imageFit, setImageFit] = useState<ImageFit>('contain');
-  const [imageScale, setImageScale] = useState(100);
-  const [imageOffsetX, setImageOffsetX] = useState(0);
-  const [imageOffsetY, setImageOffsetY] = useState(0);
-  const template = templates[templateIndex];
+  const [showGuide, setShowGuide] = useState(true);
+  const [previewZoom, setPreviewZoom] = useState(100);
+  const [isDraggingFile, setIsDraggingFile] = useState(false);
+  const [isPositioning, setIsPositioning] = useState(false);
+  const [notice, setNotice] = useState('');
+  const template = memeTemplates[templateIndex];
+
+  const patchEditor = useCallback((patch: Partial<MemeEditorState>) => {
+    setEditor((current) => ({ ...current, ...patch }));
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
+    setTemplateStatus('loading');
     setTemplateImage(null);
-    setTemplateError(false);
-    loadImage(template.source).then((image) => {
-      if (!cancelled) setTemplateImage(image);
-    }).catch(() => {
-      if (!cancelled) setTemplateError(true);
-    });
-    setClearBubble(template.clearBubble);
+    loadCanvasImage(template.source)
+      .then((image) => {
+        if (cancelled) return;
+        setTemplateImage(image);
+        setTemplateStatus('ready');
+      })
+      .catch(() => {
+        if (!cancelled) setTemplateStatus('error');
+      });
+    patchEditor({ clearBubble: template.clearBubble, imageScale: 100, imageOffsetX: 0, imageOffsetY: 0 });
     return () => { cancelled = true; };
-  }, [template]);
+  }, [patchEditor, template]);
 
   useEffect(() => () => {
     if (uploadUrlRef.current) URL.revokeObjectURL(uploadUrlRef.current);
   }, []);
 
-  const drawCanvas = useCallback((canvas: HTMLCanvasElement, showGuide: boolean) => {
-    if (!templateImage) return;
-    const context = canvas.getContext('2d');
-    if (!context) return;
-    canvas.width = templateImage.naturalWidth;
-    canvas.height = templateImage.naturalHeight;
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(templateImage, 0, 0, canvas.width, canvas.height);
-
-    const box = {
-      x: template.bubble.x * canvas.width,
-      y: template.bubble.y * canvas.height,
-      width: template.bubble.width * canvas.width,
-      height: template.bubble.height * canvas.height,
-    };
-    const radius = Math.min(box.width, box.height) * 0.18;
-
-    if (clearBubble) {
-      context.save();
-      context.fillStyle = '#ffffff';
-      roundedRect(context, box.x, box.y, box.width, box.height, radius);
-      context.fill();
-      context.restore();
-    }
-
-    if (mode === 'text') {
-      const maxWidth = box.width * 0.88;
-      const maxHeight = box.height * 0.86;
-      let size = fontSize * (canvas.width / 600);
-      let lines: string[] = [];
-      const minimumSize = Math.max(12, canvas.width * 0.018);
-      while (size >= minimumSize) {
-        context.font = `800 ${size}px ${fontFamily}`;
-        lines = wrapText(context, text, maxWidth);
-        const totalHeight = lines.length * size * lineHeight;
-        if (!autoFit || (lines.every((line) => context.measureText(line).width <= maxWidth) && totalHeight <= maxHeight)) break;
-        size -= Math.max(1, canvas.width / 600 * 2);
-      }
-      const lineGap = size * lineHeight;
-      const totalHeight = lines.length * lineGap;
-      const startY = box.y + box.height / 2 - totalHeight / 2 + lineGap / 2;
-      context.save();
-      context.font = `800 ${size}px ${fontFamily}`;
-      context.textBaseline = 'middle';
-      context.textAlign = align;
-      context.lineJoin = 'round';
-      let x = box.x + box.width / 2;
-      if (align === 'left') x = box.x + box.width * 0.06;
-      if (align === 'right') x = box.x + box.width * 0.94;
-      for (const [index, line] of lines.entries()) {
-        const y = startY + index * lineGap;
-        context.strokeStyle = 'rgba(255, 255, 255, 0.9)';
-        context.lineWidth = Math.max(3, size * 0.11);
-        context.strokeText(line, x, y);
-        context.fillStyle = textColor;
-        context.fillText(line, x, y);
-      }
-      context.restore();
-    } else if (overlayImage) {
-      const naturalWidth = overlayImage.naturalWidth;
-      const naturalHeight = overlayImage.naturalHeight;
-      const baseScale = imageFit === 'cover'
-        ? Math.max(box.width / naturalWidth, box.height / naturalHeight)
-        : Math.min(box.width / naturalWidth, box.height / naturalHeight);
-      const scale = baseScale * (imageScale / 100);
-      const width = naturalWidth * scale;
-      const height = naturalHeight * scale;
-      const x = box.x + (box.width - width) / 2 + imageOffsetX / 100 * box.width;
-      const y = box.y + (box.height - height) / 2 + imageOffsetY / 100 * box.height;
-      context.save();
-      roundedRect(context, box.x, box.y, box.width, box.height, radius);
-      context.clip();
-      context.drawImage(overlayImage, x, y, width, height);
-      context.restore();
-    }
-
-    if (showGuide) {
-      context.save();
-      context.setLineDash([Math.max(5, canvas.width * 0.009), Math.max(4, canvas.width * 0.006)]);
-      context.lineWidth = Math.max(2, canvas.width * 0.003);
-      context.strokeStyle = 'rgba(20, 125, 146, 0.72)';
-      roundedRect(context, box.x, box.y, box.width, box.height, radius);
-      context.stroke();
-      context.restore();
-    }
-  }, [align, autoFit, clearBubble, fontSize, imageFit, imageOffsetX, imageOffsetY, imageScale, lineHeight, mode, overlayImage, template, templateImage, text, textColor]);
-
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (canvas) drawCanvas(canvas, true);
-  }, [drawCanvas]);
+    if (!canvas || !templateImage) return;
+    renderMeme(canvas, { template, templateImage, overlayImage, editor, showGuide });
+  }, [editor, overlayImage, showGuide, template, templateImage]);
 
-  const selectTemplate = (index: number) => {
-    setTemplateIndex(index);
-    setImageScale(100);
-    setImageOffsetX(0);
-    setImageOffsetY(0);
-  };
-
-  const uploadOverlay = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const useOverlayFile = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      setNotice('请选择图片文件');
+      return;
+    }
     if (uploadUrlRef.current) URL.revokeObjectURL(uploadUrlRef.current);
     const objectUrl = URL.createObjectURL(file);
     uploadUrlRef.current = objectUrl;
-    const image = await loadImage(objectUrl);
-    setOverlayImage(image);
-    setOverlayName(file.name);
-    setMode('image');
-    setImageScale(100);
-    setImageOffsetX(0);
-    setImageOffsetY(0);
+    try {
+      const image = await loadCanvasImage(objectUrl);
+      setOverlayImage(image);
+      setOverlayName(file.name);
+      patchEditor({ mode: 'image', imageScale: 100, imageOffsetX: 0, imageOffsetY: 0 });
+      setNotice('');
+    } catch {
+      setNotice('图片读取失败');
+    }
+  };
+
+  const uploadOverlay = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) void useOverlayFile(file);
     event.target.value = '';
   };
 
-  const resetContent = () => {
-    setText('我没意见');
-    setFontSize(44);
-    setLineHeight(1.18);
-    setAlign('center');
-    setAutoFit(true);
-    setTextColor('#111111');
-    setClearBubble(template.clearBubble);
-    setImageFit('contain');
-    setImageScale(100);
-    setImageOffsetX(0);
-    setImageOffsetY(0);
+  const dropOverlay = (event: DragEvent<HTMLLabelElement>) => {
+    event.preventDefault();
+    setIsDraggingFile(false);
+    const file = event.dataTransfer.files[0];
+    if (file) void useOverlayFile(file);
+  };
+
+  const clearOverlay = () => {
+    setOverlayImage(null);
+    setOverlayName('');
+    if (uploadUrlRef.current) URL.revokeObjectURL(uploadUrlRef.current);
+    uploadUrlRef.current = '';
+    patchEditor({ imageScale: 100, imageOffsetX: 0, imageOffsetY: 0 });
+  };
+
+  const resetEditor = () => {
+    setEditor({ ...defaultEditor, clearBubble: template.clearBubble });
+    setPreviewZoom(100);
+    setShowGuide(true);
+    setNotice('已恢复默认设置');
   };
 
   const download = () => {
     if (!templateImage) return;
     const output = document.createElement('canvas');
-    drawCanvas(output, false);
-    output.toBlob((blob) => {
-      if (!blob) return;
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `meme-${Date.now()}.png`;
-      link.click();
-      window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
-    }, 'image/png');
+    renderMeme(output, { template, templateImage, overlayImage, editor, showGuide: false });
+    try {
+      output.toBlob((blob) => {
+        if (!blob) {
+          setNotice('PNG 生成失败');
+          return;
+        }
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${template.id}-${Date.now()}.png`;
+        link.click();
+        window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+        setNotice('PNG 已开始下载');
+      }, 'image/png');
+    } catch {
+      setNotice('导出失败，请刷新后重试');
+    }
+  };
+
+  const startPositioning = (event: PointerEvent<HTMLCanvasElement>) => {
+    if (editor.mode !== 'image' || !overlayImage) return;
+    dragStartRef.current = {
+      x: event.clientX,
+      y: event.clientY,
+      offsetX: editor.imageOffsetX,
+      offsetY: editor.imageOffsetY,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setIsPositioning(true);
+  };
+
+  const movePositioning = (event: PointerEvent<HTMLCanvasElement>) => {
+    const start = dragStartRef.current;
+    if (!start) return;
+    const width = event.currentTarget.clientWidth * template.bubble.width;
+    const height = event.currentTarget.clientHeight * template.bubble.height;
+    patchEditor({
+      imageOffsetX: Math.max(-100, Math.min(100, start.offsetX + (event.clientX - start.x) / width * 100)),
+      imageOffsetY: Math.max(-100, Math.min(100, start.offsetY + (event.clientY - start.y) / height * 100)),
+    });
+  };
+
+  const stopPositioning = () => {
+    dragStartRef.current = null;
+    setIsPositioning(false);
   };
 
   return (
-    <main className="generator-page">
-      <header className="generator-header">
-        <div>
-          <p className="category-eyebrow">MEME STUDIO</p>
-          <h1>表情包生成器</h1>
+    <main className="studio-page">
+      <header className="studio-header">
+        <div className="studio-title">
+          <span className="studio-title-icon"><ImagePlus size={19} /></span>
+          <div>
+            <h1>表情包生成器</h1>
+            <p>{template.name}{templateImage ? ` · ${templateImage.naturalWidth} × ${templateImage.naturalHeight}` : ''}</p>
+          </div>
         </div>
-        <div className="generator-header-actions">
-          <button type="button" className="generator-button secondary" onClick={resetContent}>
-            <RotateCcw size={16} />重置
+        <div className="studio-header-actions">
+          <button type="button" className="studio-icon-button" title="恢复默认设置" aria-label="恢复默认设置" onClick={resetEditor}>
+            <RotateCcw size={17} />
           </button>
-          <button type="button" className="generator-button primary" onClick={download}>
-            <Download size={17} />下载 PNG
+          <button type="button" className="studio-export-button" disabled={!templateImage} onClick={download}>
+            <Download size={17} />
+            导出 PNG
           </button>
         </div>
       </header>
 
-      <div className="generator-workspace">
-        <section className="generator-preview" aria-label="表情包预览">
-          <div className="generator-canvas-stage">
-            <canvas ref={canvasRef} aria-label="生成结果" />
-            {!templateImage && (
-              <span className="generator-canvas-status">{templateError ? '模板加载失败' : '正在加载模板'}</span>
-            )}
+      <div className="studio-workspace">
+        <section className="studio-preview" aria-label="表情包预览">
+          <div className="studio-preview-toolbar">
+            <div className="studio-zoom-control" role="group" aria-label="预览缩放">
+              <button type="button" title="缩小预览" aria-label="缩小预览" onClick={() => setPreviewZoom((value) => Math.max(60, value - 10))}><Minus size={15} /></button>
+              <button type="button" title="适应画布" onClick={() => setPreviewZoom(100)}><Maximize2 size={14} /><span>{previewZoom}%</span></button>
+              <button type="button" title="放大预览" aria-label="放大预览" onClick={() => setPreviewZoom((value) => Math.min(160, value + 10))}><Plus size={15} /></button>
+            </div>
+            <button
+              type="button"
+              className="studio-guide-button"
+              data-active={showGuide}
+              title="显示内容区域"
+              aria-label="显示内容区域"
+              aria-pressed={showGuide}
+              onClick={() => setShowGuide((value) => !value)}
+            >
+              <Grid2X2 size={16} />
+            </button>
           </div>
-          <span className="generator-preview-note">虚线仅用于标记气泡区域</span>
+
+          <div className="studio-canvas-scroll">
+            <div className="studio-canvas-stage">
+              {templateStatus !== 'ready' && (
+                <div className="studio-canvas-status" role="status">
+                  {templateStatus === 'error' ? '模板加载失败' : '正在加载模板'}
+                </div>
+              )}
+              <div className="studio-canvas-frame" style={{ width: `${previewZoom}%` }}>
+                <canvas
+                  ref={canvasRef}
+                  aria-label="生成结果"
+                  data-positionable={editor.mode === 'image' && Boolean(overlayImage)}
+                  data-dragging={isPositioning}
+                  onPointerDown={startPositioning}
+                  onPointerMove={movePositioning}
+                  onPointerUp={stopPositioning}
+                  onPointerCancel={stopPositioning}
+                />
+              </div>
+            </div>
+          </div>
+          <span className="studio-notice" aria-live="polite">{notice}</span>
         </section>
 
-        <aside className="generator-controls" aria-label="生成器选项">
-          <section className="generator-control-section">
-            <h2>模板</h2>
-            <div className="generator-template-grid">
-              {templates.map((item, index) => (
+        <aside className="studio-inspector" aria-label="编辑选项">
+          <section className="studio-panel-section">
+            <div className="studio-section-title"><h2>模板</h2><span>{templateIndex + 1} / {memeTemplates.length}</span></div>
+            <div className="studio-template-list">
+              {memeTemplates.map((item, index) => (
                 <button
-                  key={item.name}
+                  key={item.id}
                   type="button"
-                  className="generator-template"
-                  data-active={templateIndex === index}
-                  onClick={() => selectTemplate(index)}
+                  className="studio-template-button"
+                  data-active={index === templateIndex}
                   aria-label={`选择${item.name}`}
+                  aria-pressed={index === templateIndex}
+                  onClick={() => setTemplateIndex(index)}
                 >
                   <img src={item.source} crossOrigin="anonymous" alt="" />
                   <span>{item.name}</span>
+                  {index === templateIndex && <Check size={15} />}
                 </button>
               ))}
             </div>
           </section>
 
-          <section className="generator-control-section">
-            <div className="generator-section-heading">
-              <h2>气泡内容</h2>
-              <label className="generator-toggle">
-                <input type="checkbox" checked={clearBubble} onChange={(event) => setClearBubble(event.target.checked)} />
-                <span>白色底</span>
-              </label>
-            </div>
-            <div className="generator-mode-switch" role="group" aria-label="气泡内容类型">
-              <button type="button" data-active={mode === 'text'} onClick={() => setMode('text')}><Type size={16} />文字</button>
-              <button type="button" data-active={mode === 'image'} onClick={() => setMode('image')}><ImagePlus size={16} />图片</button>
+          <section className="studio-panel-section studio-content-section">
+            <div className="studio-section-title"><h2>内容</h2></div>
+            <div className="studio-mode-switch" role="group" aria-label="内容类型">
+              <button type="button" data-active={editor.mode === 'text'} onClick={() => patchEditor({ mode: 'text' })}><Type size={16} />文字</button>
+              <button type="button" data-active={editor.mode === 'image'} onClick={() => patchEditor({ mode: 'image' })}><ImagePlus size={16} />图片</button>
             </div>
 
-            {mode === 'text' ? (
-              <div className="generator-fields">
-                <label className="generator-field">
-                  <span>内容</span>
-                  <textarea value={text} maxLength={160} rows={4} onChange={(event) => setText(event.target.value)} />
+            {editor.mode === 'text' ? (
+              <div className="studio-fields">
+                <label className="studio-text-field">
+                  <span><span>文字</span><output>{editor.text.length} / 160</output></span>
+                  <textarea rows={4} maxLength={160} value={editor.text} onChange={(event) => patchEditor({ text: event.target.value })} />
                 </label>
-                <div className="generator-inline-fields">
-                  <label className="generator-field grow">
-                    <span>字号 <output>{fontSize}</output></span>
-                    <input type="range" min="18" max="96" value={fontSize} onChange={(event) => setFontSize(Number(event.target.value))} />
-                  </label>
-                  <label className="generator-color-field" title="文字颜色">
+                <RangeField label="字号" value={editor.fontSize} display={`${editor.fontSize}px`} min={18} max={96} onChange={(fontSize) => patchEditor({ fontSize })} />
+                <RangeField label="行距" value={editor.lineHeight} display={editor.lineHeight.toFixed(2)} min={1} max={1.8} step={0.02} onChange={(lineHeight) => patchEditor({ lineHeight })} />
+                <div className="studio-field-row">
+                  <div className="studio-icon-segments" role="group" aria-label="文字对齐">
+                    <button type="button" title="左对齐" aria-label="左对齐" data-active={editor.align === 'left'} onClick={() => patchEditor({ align: 'left' })}><AlignLeft size={17} /></button>
+                    <button type="button" title="居中" aria-label="居中" data-active={editor.align === 'center'} onClick={() => patchEditor({ align: 'center' })}><AlignCenter size={17} /></button>
+                    <button type="button" title="右对齐" aria-label="右对齐" data-active={editor.align === 'right'} onClick={() => patchEditor({ align: 'right' })}><AlignRight size={17} /></button>
+                  </div>
+                  <label className="studio-color-field" title="文字颜色">
                     <span>颜色</span>
-                    <input type="color" value={textColor} onChange={(event) => setTextColor(event.target.value)} />
+                    <input type="color" value={editor.textColor} onChange={(event) => patchEditor({ textColor: event.target.value })} />
                   </label>
                 </div>
-                <label className="generator-field">
-                  <span>行距 <output>{lineHeight.toFixed(2)}</output></span>
-                  <input type="range" min="1" max="1.8" step="0.02" value={lineHeight} onChange={(event) => setLineHeight(Number(event.target.value))} />
-                </label>
-                <div className="generator-inline-fields">
-                  <div className="generator-icon-segments" role="group" aria-label="文字对齐">
-                    <button type="button" title="左对齐" aria-label="左对齐" data-active={align === 'left'} onClick={() => setAlign('left')}><AlignLeft size={17} /></button>
-                    <button type="button" title="居中" aria-label="居中" data-active={align === 'center'} onClick={() => setAlign('center')}><AlignCenter size={17} /></button>
-                    <button type="button" title="右对齐" aria-label="右对齐" data-active={align === 'right'} onClick={() => setAlign('right')}><AlignRight size={17} /></button>
-                  </div>
-                  <label className="generator-toggle">
-                    <input type="checkbox" checked={autoFit} onChange={(event) => setAutoFit(event.target.checked)} />
-                    <span>自动适配</span>
-                  </label>
+                <RangeField label="水平位置" value={editor.textOffsetX} display={`${editor.textOffsetX > 0 ? '+' : ''}${editor.textOffsetX}`} min={-50} max={50} onChange={(textOffsetX) => patchEditor({ textOffsetX })} />
+                <RangeField label="垂直位置" value={editor.textOffsetY} display={`${editor.textOffsetY > 0 ? '+' : ''}${editor.textOffsetY}`} min={-50} max={50} onChange={(textOffsetY) => patchEditor({ textOffsetY })} />
+                <div className="studio-toggle-list">
+                  <label><span>自动适配</span><input type="checkbox" checked={editor.autoFit} onChange={(event) => patchEditor({ autoFit: event.target.checked })} /></label>
+                  <label><span>白色描边</span><input type="checkbox" checked={editor.outline} onChange={(event) => patchEditor({ outline: event.target.checked })} /></label>
                 </div>
               </div>
             ) : (
-              <div className="generator-fields">
-                <label className="generator-upload">
-                  <Upload size={18} />
-                  <span>{overlayName || '选择气泡图片'}</span>
+              <div className="studio-fields">
+                <label
+                  className="studio-dropzone"
+                  data-dragging={isDraggingFile}
+                  onDragEnter={() => setIsDraggingFile(true)}
+                  onDragLeave={() => setIsDraggingFile(false)}
+                  onDragOver={(event) => event.preventDefault()}
+                  onDrop={dropOverlay}
+                >
+                  <Upload size={19} />
+                  <span>{overlayName || '选择图片'}</span>
                   <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={uploadOverlay} />
                 </label>
-                <div className="generator-mode-switch compact" role="group" aria-label="图片填充方式">
-                  <button type="button" data-active={imageFit === 'contain'} onClick={() => setImageFit('contain')}>适应</button>
-                  <button type="button" data-active={imageFit === 'cover'} onClick={() => setImageFit('cover')}>填满</button>
+                {overlayImage && (
+                  <button type="button" className="studio-clear-image" onClick={clearOverlay}><Trash2 size={15} />移除图片</button>
+                )}
+                <div className="studio-fit-switch" role="group" aria-label="图片填充方式">
+                  <button type="button" data-active={editor.imageFit === 'contain'} onClick={() => patchEditor({ imageFit: 'contain' })}>适应</button>
+                  <button type="button" data-active={editor.imageFit === 'cover'} onClick={() => patchEditor({ imageFit: 'cover' })}>填满</button>
                 </div>
-                <label className="generator-field">
-                  <span>缩放 <output>{imageScale}%</output></span>
-                  <input type="range" min="50" max="200" value={imageScale} onChange={(event) => setImageScale(Number(event.target.value))} />
-                </label>
-                <label className="generator-field">
-                  <span>水平位置 <output>{imageOffsetX}</output></span>
-                  <input type="range" min="-50" max="50" value={imageOffsetX} onChange={(event) => setImageOffsetX(Number(event.target.value))} />
-                </label>
-                <label className="generator-field">
-                  <span>垂直位置 <output>{imageOffsetY}</output></span>
-                  <input type="range" min="-50" max="50" value={imageOffsetY} onChange={(event) => setImageOffsetY(Number(event.target.value))} />
-                </label>
+                <RangeField label="缩放" value={editor.imageScale} display={`${editor.imageScale}%`} min={40} max={240} onChange={(imageScale) => patchEditor({ imageScale })} />
+                <RangeField label="水平位置" value={Math.round(editor.imageOffsetX)} min={-100} max={100} onChange={(imageOffsetX) => patchEditor({ imageOffsetX })} />
+                <RangeField label="垂直位置" value={Math.round(editor.imageOffsetY)} min={-100} max={100} onChange={(imageOffsetY) => patchEditor({ imageOffsetY })} />
               </div>
             )}
+          </section>
+
+          <section className="studio-panel-section studio-surface-section">
+            <label className="studio-surface-toggle">
+              <span><strong>白色气泡底</strong><small>覆盖模板原有内容</small></span>
+              <input type="checkbox" checked={editor.clearBubble} onChange={(event) => patchEditor({ clearBubble: event.target.checked })} />
+            </label>
           </section>
         </aside>
       </div>

@@ -110,8 +110,8 @@ export function Sidebar({ categories, activeId, generatorActive, total, brandCov
         </span>
       </a>
 
-      <nav className="flex-1 space-y-1 overflow-y-auto p-3" aria-label="角色分类">
-        <p className="px-3 pb-2 pt-1 text-[11px] font-semibold text-zinc-400 uppercase">工具</p>
+      <nav className="flex-1 space-y-1 overflow-y-auto p-3" aria-label="内容导航">
+        <p className="px-3 pb-2 pt-1 text-[11px] font-semibold text-zinc-400 uppercase">内容</p>
         <button
           type="button"
           className="category-nav-button generator-nav-button"
@@ -122,10 +122,9 @@ export function Sidebar({ categories, activeId, generatorActive, total, brandCov
           <span className="generator-nav-icon"><WandSparkles size={20} /></span>
           <span className="min-w-0 flex-1 text-left">
             <strong className="block truncate text-sm font-semibold">表情包生成器</strong>
-            <span className="mt-0.5 block truncate text-[11px] opacity-65">Meme Studio</span>
+            <span className="mt-0.5 block truncate text-[11px] opacity-65">创建表情包</span>
           </span>
         </button>
-        <p className="px-3 pb-2 pt-1 text-[11px] font-semibold text-zinc-400 uppercase">角色分类</p>
         {categories.map((category) => {
           const active = category.id === activeId;
           return (
@@ -175,7 +174,7 @@ export function MobileCategories({ categories, activeId, generatorActive, onSele
         onClick={onOpenGenerator}
       >
         <WandSparkles size={14} />
-        <span>制作</span>
+        <span>生成器</span>
       </button>
       {categories.map((category) => {
         const active = category.id === activeId;
