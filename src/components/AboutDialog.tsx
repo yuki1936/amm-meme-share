@@ -21,14 +21,24 @@ export function AboutDialog({ open, onClose }: AboutDialogProps) {
           <p>本站用于按角色整理和分享表情包。所有图片来自互联网公开来源，仅供交流使用，作者不对相关内容主张版权。</p>
           <p>如内容涉及侵权，请联系 <a className="font-medium text-teal-700 underline underline-offset-4 dark:text-teal-400" href="mailto:yukikaze@disroot.org">yukikaze@disroot.org</a>。</p>
         </div>
-        <a
-          href="https://www.youtube.com/channel/UCkIimWZ9gBJRamKF0rmPU8w?sub_confirmation=1"
-          target="_blank"
-          rel="noreferrer"
-          className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-zinc-900 dark:text-white"
-        >
-          关注阿喵喵 <ExternalLink size={15} />
-        </a>
+        <div className="mt-6 flex flex-col items-start gap-3">
+          <a
+            href="https://yuki1936.com"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-900 dark:text-white"
+          >
+            个人主页 yuki1936.com <ExternalLink size={15} />
+          </a>
+          <a
+            href="https://www.youtube.com/channel/UCkIimWZ9gBJRamKF0rmPU8w?sub_confirmation=1"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-900 dark:text-white"
+          >
+            关注阿喵喵 <ExternalLink size={15} />
+          </a>
+        </div>
       </section>
     </div>
   );
