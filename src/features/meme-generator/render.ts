@@ -32,8 +32,19 @@ function roundedRect(
   height: number,
   radius: number,
 ) {
+  const clamped = Math.min(radius, width / 2, height / 2);
   context.beginPath();
-  context.roundRect(x, y, width, height, Math.min(radius, width / 2, height / 2));
+  // roundRect 需要较新的浏览器（Safari 16.4+ 等），旧内核退回 arcTo 手绘。
+  if (typeof context.roundRect === 'function') {
+    context.roundRect(x, y, width, height, clamped);
+    return;
+  }
+  context.moveTo(x + clamped, y);
+  context.arcTo(x + width, y, x + width, y + height, clamped);
+  context.arcTo(x + width, y + height, x, y + height, clamped);
+  context.arcTo(x, y + height, x, y, clamped);
+  context.arcTo(x, y, x + width, y, clamped);
+  context.closePath();
 }
 
 function splitToken(context: CanvasRenderingContext2D, token: string, maxWidth: number): string[] {

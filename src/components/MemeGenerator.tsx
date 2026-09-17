@@ -82,6 +82,8 @@ export function MemeGenerator() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const uploadUrlRef = useRef('');
   const dragStartRef = useRef<{ x: number; y: number; offsetX: number; offsetY: number } | null>(null);
+  const moveFrameRef = useRef(0);
+  const pendingPointRef = useRef<{ clientX: number; clientY: number; width: number; height: number } | null>(null);
   const [templateIndex, setTemplateIndex] = useState(0);
   const [templateImage, setTemplateImage] = useState<HTMLImageElement | null>(null);
   const [templateStatus, setTemplateStatus] = useState<'loading' | 'ready' | 'error'>('loading');
@@ -118,6 +120,7 @@ export function MemeGenerator() {
 
   useEffect(() => () => {
     if (uploadUrlRef.current) URL.revokeObjectURL(uploadUrlRef.current);
+    if (moveFrameRef.current) cancelAnimationFrame(moveFrameRef.current);
   }, []);
 
   useEffect(() => {
@@ -126,7 +129,7 @@ export function MemeGenerator() {
     renderMeme(canvas, { template, templateImage, overlayImage, editor, showGuide });
   }, [editor, overlayImage, showGuide, template, templateImage]);
 
-  const useOverlayFile = async (file: File) => {
+  const applyOverlayFile = async (file: File) => {
     if (!file.type.startsWith('image/')) {
       setNotice('请选择图片文件');
       return;
@@ -147,7 +150,7 @@ export function MemeGenerator() {
 
   const uploadOverlay = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) void useOverlayFile(file);
+    if (file) void applyOverlayFile(file);
     event.target.value = '';
   };
 
@@ -155,7 +158,7 @@ export function MemeGenerator() {
     event.preventDefault();
     setIsDraggingFile(false);
     const file = event.dataTransfer.files[0];
-    if (file) void useOverlayFile(file);
+    if (file) void applyOverlayFile(file);
   };
 
   const clearOverlay = () => {
@@ -231,18 +234,36 @@ export function MemeGenerator() {
     setIsPositioning(true);
   };
 
-  const movePositioning = (event: PointerEvent<HTMLCanvasElement>) => {
+  const applyPendingPosition = () => {
+    moveFrameRef.current = 0;
     const start = dragStartRef.current;
-    if (!start) return;
-    const width = event.currentTarget.clientWidth * template.bubble.width;
-    const height = event.currentTarget.clientHeight * template.bubble.height;
+    const point = pendingPointRef.current;
+    pendingPointRef.current = null;
+    if (!start || !point) return;
     patchEditor({
-      imageOffsetX: Math.max(-100, Math.min(100, start.offsetX + (event.clientX - start.x) / width * 100)),
-      imageOffsetY: Math.max(-100, Math.min(100, start.offsetY + (event.clientY - start.y) / height * 100)),
+      imageOffsetX: Math.max(-100, Math.min(100, start.offsetX + (point.clientX - start.x) / point.width * 100)),
+      imageOffsetY: Math.max(-100, Math.min(100, start.offsetY + (point.clientY - start.y) / point.height * 100)),
     });
   };
 
+  // pointermove 高频触发，每帧只做一次 canvas 全量重绘。
+  const movePositioning = (event: PointerEvent<HTMLCanvasElement>) => {
+    const start = dragStartRef.current;
+    if (!start) return;
+    pendingPointRef.current = {
+      clientX: event.clientX,
+      clientY: event.clientY,
+      width: event.currentTarget.clientWidth * template.bubble.width,
+      height: event.currentTarget.clientHeight * template.bubble.height,
+    };
+    if (!moveFrameRef.current) moveFrameRef.current = requestAnimationFrame(applyPendingPosition);
+  };
+
   const stopPositioning = () => {
+    if (moveFrameRef.current) {
+      window.cancelAnimationFrame(moveFrameRef.current);
+      applyPendingPosition();
+    }
     dragStartRef.current = null;
     setIsPositioning(false);
   };

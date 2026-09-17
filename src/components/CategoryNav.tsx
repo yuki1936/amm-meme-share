@@ -85,17 +85,6 @@ function UtilityMenu({ theme, mobile = false, onToggleTheme, onAbout }: UtilityM
             <ExternalLink size={16} />
             个人主页
           </a>
-          <a
-            role="menuitem"
-            href="https://www.youtube.com/channel/UCkIimWZ9gBJRamKF0rmPU8w?sub_confirmation=1"
-            target="_blank"
-            rel="noreferrer"
-            className="utility-menu-item"
-            onClick={() => setOpen(false)}
-          >
-            <ExternalLink size={16} />
-            关注阿喵喵
-          </a>
         </div>
       )}
     </div>

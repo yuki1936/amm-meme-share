@@ -3,9 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#f7f8f8" />
+    <!-- 默认主题为暗色；本地保存过浅色偏好时在首帧绘制前纠正。 -->
+    <meta name="theme-color" content="#111516" />
+    <script>
+      try {
+        if (localStorage.getItem('meme-share-theme') === 'light') {
+          document
+            .querySelector('meta[name="theme-color"]')
+            ?.setAttribute('content', '#f7f8f8');
+        }
+      } catch (error) {}
+    </script>
     <meta name="description" content="按角色整理、随手可用的表情包收藏。" />
-    <link id="favicon" rel="icon" type="image/webp" />
+    <link id="favicon" rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>表情包分享</title>
   </head>
   <body>

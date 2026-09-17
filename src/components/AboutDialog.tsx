@@ -30,14 +30,6 @@ export function AboutDialog({ open, onClose }: AboutDialogProps) {
           >
             个人主页 yuki1936.com <ExternalLink size={15} />
           </a>
-          <a
-            href="https://www.youtube.com/channel/UCkIimWZ9gBJRamKF0rmPU8w?sub_confirmation=1"
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-900 dark:text-white"
-          >
-            关注阿喵喵 <ExternalLink size={15} />
-          </a>
         </div>
       </section>
     </div>

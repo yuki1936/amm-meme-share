@@ -154,7 +154,8 @@ export default function App() {
     setGeneratorOpen(false);
     setActiveId(category.id);
     setViewerId(validViewerId);
-    setVisibleCount(getVisibleCountForScreens(items));
+    // hashchange 也可能来自历史导航，只增不减，避免后退时瀑布流收缩回顶部。
+    setVisibleCount((current) => Math.max(current, getVisibleCountForScreens(items)));
     localStorage.setItem('gallery-category', category.id);
     if (route.categoryId !== category.id || route.itemId !== validViewerId) {
       updateRoute(category.id, validViewerId, 'replace');

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from 'react';
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { ChevronLeft, ChevronRight, Copy, Download, Link, LoaderCircle, Maximize2, Minus, Plus, X } from 'lucide-react';
 import { assetUrl, copyItem, copyPageLink, downloadItem } from '../lib/gallery';
 import type { GalleryCategory, GalleryItem } from '../types';
@@ -52,6 +52,19 @@ export function Viewer({ category, item, index, onClose, onNavigate, notify }: V
     };
   }, [onClose, onNavigate]);
 
+  // React 会把 onWheel 注册为 passive，preventDefault 无效，这里改用原生非 passive 监听。
+  useEffect(() => {
+    const node = canvasRef.current;
+    if (!node) return;
+    const handleWheel = (event: WheelEvent) => {
+      event.preventDefault();
+      applyZoom(zoomRef.current * Math.exp(-event.deltaY * 0.002), event.clientX, event.clientY);
+    };
+    node.addEventListener('wheel', handleWheel, { passive: false });
+    return () => node.removeEventListener('wheel', handleWheel);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- applyZoom 只读取 ref 与稳定的 setState
+  }, []);
+
   const commitView = (nextZoom: number, nextOffset: { x: number; y: number }) => {
     zoomRef.current = nextZoom;
     offsetRef.current = nextOffset;
@@ -90,11 +103,6 @@ export function Viewer({ category, item, index, onClose, onNavigate, notify }: V
   };
 
   const resetView = () => commitView(FIT_ZOOM, { x: 0, y: 0 });
-
-  const handleWheel = (event: ReactWheelEvent<HTMLElement>) => {
-    event.preventDefault();
-    applyZoom(zoomRef.current * Math.exp(-event.deltaY * 0.002), event.clientX, event.clientY);
-  };
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLElement>) => {
     if (zoomRef.current <= FIT_ZOOM || event.button !== 0) return;
@@ -175,7 +183,6 @@ export function Viewer({ category, item, index, onClose, onNavigate, notify }: V
       <figure
         ref={canvasRef}
         className={`viewer-canvas ${zoom > FIT_ZOOM ? dragging ? 'is-dragging' : 'is-zoomed' : ''}`}
-        onWheel={handleWheel}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerEnd}
