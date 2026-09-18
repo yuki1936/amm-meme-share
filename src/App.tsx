@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { ArrowDownNarrowWide, ArrowUpNarrowWide, Shuffle } from 'lucide-react';
+import { ArrowDownNarrowWide, ArrowUpNarrowWide, ImageOff, RotateCcw, Shuffle } from 'lucide-react';
 import { AboutDialog } from './components/AboutDialog';
 import { MobileCategories, MobileUtilities, Sidebar } from './components/CategoryNav';
 import { GalleryMasonry } from './components/GalleryMasonry';
 import { MemeGenerator } from './components/MemeGenerator';
 import { Toast } from './components/Toast';
 import { Viewer } from './components/Viewer';
+import { Button } from './components/ui/button';
+import { Skeleton } from './components/ui/skeleton';
+import { Tabs, TabsList, TabsTrigger } from './components/ui/tabs';
 import { assetUrl, parseRoute, updateRoute } from './lib/gallery';
 import { useTheme } from './hooks/useTheme';
 import type { GalleryCategory, GalleryItem, GalleryManifest, SortOrder } from './types';
@@ -52,11 +55,20 @@ function getVisibleCountForScreens(items: GalleryItem[], currentCount = 0, scree
 
 function LoadingState() {
   return (
-    <div className="min-h-screen bg-[#f7f8f8] lg:pl-72 dark:bg-[#111516]">
+    <div className="min-h-screen bg-background lg:pl-72">
       <main className="mx-auto max-w-[1800px] px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-7 h-20 w-72 animate-pulse rounded-md bg-zinc-200 dark:bg-zinc-800" />
+        <div className="mb-7 flex items-end justify-between gap-6">
+          <div className="w-full max-w-md space-y-3">
+            <Skeleton className="h-3.5 w-24" />
+            <Skeleton className="h-9 w-56" />
+            <Skeleton className="h-4 w-full max-w-sm" />
+          </div>
+          <Skeleton className="h-9 w-64 shrink-0 rounded-lg" />
+        </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {Array.from({ length: 15 }, (_, index) => <div key={index} className="aspect-square animate-pulse rounded-md bg-zinc-200 dark:bg-zinc-800" />)}
+          {Array.from({ length: 15 }, (_, index) => (
+            <Skeleton key={index} className="aspect-square rounded-xl" />
+          ))}
         </div>
       </main>
     </div>
@@ -65,18 +77,29 @@ function LoadingState() {
 
 function ErrorState({ message }: { message: string }) {
   return (
-    <main className="grid min-h-screen place-items-center bg-[#f7f8f8] p-6 dark:bg-[#111516]">
-      <div className="max-w-md text-center">
-        <strong className="text-lg text-zinc-950 dark:text-white">图库加载失败</strong>
-        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">{message}</p>
+    <main className="grid min-h-screen place-items-center bg-background p-6">
+      <div className="max-w-md rounded-xl border bg-card p-8 text-center shadow-sm">
+        <span className="mx-auto mb-4 grid size-12 place-items-center rounded-full bg-destructive/10 text-destructive">
+          <ImageOff size={22} />
+        </span>
+        <strong className="text-lg font-semibold text-foreground">图库加载失败</strong>
+        <p className="mt-2 text-sm break-all text-muted-foreground">{message}</p>
+        <Button variant="outline" size="sm" className="mt-6" onClick={() => window.location.reload()}>
+          <RotateCcw size={14} />
+          重新加载
+        </Button>
       </div>
     </main>
   );
 }
 
 function getSavedSortOrder(): SortOrder {
-  const saved = localStorage.getItem('gallery-sort');
-  return saved === 'oldest' || saved === 'random' ? saved : 'newest';
+  try {
+    const saved = localStorage.getItem('gallery-sort');
+    return saved === 'oldest' || saved === 'random' ? saved : 'newest';
+  } catch {
+    return 'newest';
+  }
 }
 
 function orderItems(items: GalleryItem[], order: SortOrder, seed: number): GalleryItem[] {
@@ -139,11 +162,19 @@ export default function App() {
   const syncRoute = useCallback(() => {
     if (!manifest) return;
     const route = parseRoute();
-    const savedId = localStorage.getItem('gallery-category') ?? '';
+    let savedId = '';
+    try {
+      savedId = localStorage.getItem('gallery-category') ?? '';
+    } catch {
+      savedId = '';
+    }
     if (route.categoryId === 'generator') {
       setGeneratorOpen(true);
       setViewerId('');
-      setActiveId((current) => current || savedId || manifest.categories[0].id);
+      const fallbackId = manifest.categories.some((item) => item.id === savedId)
+        ? savedId
+        : manifest.categories[0].id;
+      setActiveId((current) => current || fallbackId);
       return;
     }
     const category = manifest.categories.find((item) => item.id === route.categoryId)
@@ -156,7 +187,11 @@ export default function App() {
     setViewerId(validViewerId);
     // hashchange 也可能来自历史导航，只增不减，避免后退时瀑布流收缩回顶部。
     setVisibleCount((current) => Math.max(current, getVisibleCountForScreens(items)));
-    localStorage.setItem('gallery-category', category.id);
+    try {
+      localStorage.setItem('gallery-category', category.id);
+    } catch {
+      /* 隐私模式下 localStorage 不可用，忽略即可 */
+    }
     if (route.categoryId !== category.id || route.itemId !== validViewerId) {
       updateRoute(category.id, validViewerId, 'replace');
     }
@@ -228,7 +263,11 @@ export default function App() {
     setGeneratorOpen(false);
     setViewerId('');
     setVisibleCount(getVisibleCountForScreens(items));
-    localStorage.setItem('gallery-category', categoryId);
+    try {
+      localStorage.setItem('gallery-category', categoryId);
+    } catch {
+      /* 隐私模式下 localStorage 不可用，忽略即可 */
+    }
     updateRoute(categoryId);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [manifest, randomSeed, sortOrder]);
@@ -262,21 +301,27 @@ export default function App() {
 
   const changeSortOrder = (nextOrder: SortOrder) => {
     if (!activeCategory) return;
+    // 重复点击“随机”要重新洗牌，其余排序重复点击无需处理。
+    if (nextOrder === sortOrder && nextOrder !== 'random') return;
     const nextSeed = nextOrder === 'random' ? Math.floor(Math.random() * 0xffffffff) : randomSeed;
     const items = orderItems(activeCategory.items, nextOrder, nextSeed);
     if (nextOrder === 'random') setRandomSeed(nextSeed);
     setSortOrder(nextOrder);
     setVisibleCount(getVisibleCountForScreens(items));
-    localStorage.setItem('gallery-sort', nextOrder);
+    try {
+      localStorage.setItem('gallery-sort', nextOrder);
+    } catch {
+      /* 隐私模式下 localStorage 不可用，忽略即可 */
+    }
   };
 
   if (loadError) return <ErrorState message={loadError} />;
   if (!manifest || !activeCategory) return <LoadingState />;
 
-  const accentStyle = { '--accent': activeCategory.color } as CSSProperties;
+  const accentStyle = { '--cat': activeCategory.color } as CSSProperties;
 
   return (
-    <div className="min-h-screen bg-[#f7f8f8] text-zinc-900 antialiased dark:bg-[#111516] dark:text-zinc-100" style={accentStyle}>
+    <div className="min-h-screen bg-background text-foreground" style={accentStyle}>
       <Sidebar
         categories={manifest.categories}
         activeId={generatorOpen ? '' : activeCategory.id}
@@ -301,24 +346,32 @@ export default function App() {
         />
 
         {generatorOpen ? <MemeGenerator /> : <main className="mx-auto max-w-[1800px] px-3 pb-20 pt-7 sm:px-5 lg:px-8 lg:pt-10">
-          <section className="collection-heading">
+          <section className="mb-7 flex min-h-24 items-end justify-between gap-6 border-l-4 pl-4 sm:pl-5" style={{ borderColor: 'var(--cat)' }}>
             <div className="min-w-0">
-              <p className="category-eyebrow">{activeCategory.romanized}</p>
-              <h1 className="mt-1 truncate text-3xl font-black text-zinc-950 sm:text-4xl dark:text-white">{activeCategory.name}</h1>
-              <p className="mt-3 max-w-3xl whitespace-pre-line text-sm leading-6 text-zinc-500 dark:text-zinc-400">{activeCategory.description}</p>
+              <p className="text-xs font-bold tracking-wide uppercase" style={{ color: 'var(--cat)' }}>
+                {activeCategory.romanized}
+              </p>
+              <h1 className="mt-1 truncate text-3xl font-black text-foreground sm:text-4xl">{activeCategory.name}</h1>
+              <p className="mt-3 max-w-3xl text-sm leading-6 whitespace-pre-line text-muted-foreground">{activeCategory.description}</p>
             </div>
 
-            <div className="segmented-control" aria-label="排序方式">
-              <button type="button" data-active={sortOrder === 'newest'} onClick={() => changeSortOrder('newest')}>
-                <ArrowDownNarrowWide size={15} /> 最新
-              </button>
-              <button type="button" data-active={sortOrder === 'oldest'} onClick={() => changeSortOrder('oldest')}>
-                <ArrowUpNarrowWide size={15} /> 最早
-              </button>
-              <button type="button" data-active={sortOrder === 'random'} onClick={() => changeSortOrder('random')}>
-                <Shuffle size={15} /> 随机
-              </button>
-            </div>
+            <Tabs value={sortOrder} onValueChange={(value) => changeSortOrder(value as SortOrder)}>
+              <TabsList aria-label="排序方式" className="shrink-0">
+                <TabsTrigger value="newest" onClick={() => changeSortOrder('newest')}>
+                  <ArrowDownNarrowWide size={15} />
+                  <span className="hidden sm:inline">最新</span>
+                </TabsTrigger>
+                <TabsTrigger value="oldest" onClick={() => changeSortOrder('oldest')}>
+                  <ArrowUpNarrowWide size={15} />
+                  <span className="hidden sm:inline">最早</span>
+                </TabsTrigger>
+                {/* Radix Tabs 重复点击已选中项不触发 onValueChange，随机重洗牌依赖这里的 onClick。 */}
+                <TabsTrigger value="random" onClick={() => changeSortOrder('random')}>
+                  <Shuffle size={15} />
+                  <span className="hidden sm:inline">随机</span>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
           </section>
 
           <GalleryMasonry category={activeCategory} items={visibleItems} onOpen={openItem} />

@@ -27,6 +27,13 @@ import {
 import { loadCanvasImage, renderMeme } from '../features/meme-generator/render';
 import { memeTemplates } from '../features/meme-generator/templates';
 import type { MemeEditorState } from '../features/meme-generator/types';
+import { cn } from '../lib/utils';
+import { Button } from './ui/button';
+import { Slider } from './ui/slider';
+import { Switch } from './ui/switch';
+import { Tabs, TabsList, TabsTrigger } from './ui/tabs';
+import { Textarea } from './ui/textarea';
+import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
 
 const defaultEditor: MemeEditorState = {
   mode: 'text',
@@ -46,6 +53,8 @@ const defaultEditor: MemeEditorState = {
   imageOffsetY: 0,
 };
 
+const ACCEPTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+
 function RangeField({
   label,
   value,
@@ -64,17 +73,19 @@ function RangeField({
   onChange: (value: number) => void;
 }) {
   return (
-    <label className="studio-range-field">
-      <span><span>{label}</span><output>{display ?? value}</output></span>
-      <input
-        type="range"
+    <div className="flex min-w-0 flex-col gap-2">
+      <span className="flex items-center justify-between text-xs font-semibold text-secondary-foreground">
+        <span>{label}</span>
+        <output className="text-primary tabular-nums">{display ?? value}</output>
+      </span>
+      <Slider
         min={min}
         max={max}
-        step={step}
-        value={value}
-        onChange={(event) => onChange(Number(event.target.value))}
+        step={step ?? 1}
+        value={[value]}
+        onValueChange={(values) => onChange(values[0])}
       />
-    </label>
+    </div>
   );
 }
 
@@ -130,8 +141,8 @@ export function MemeGenerator() {
   }, [editor, overlayImage, showGuide, template, templateImage]);
 
   const applyOverlayFile = async (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      setNotice('请选择图片文件');
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      setNotice('请选择 PNG / JPEG / WebP 或 GIF 图片');
       return;
     }
     if (uploadUrlRef.current) URL.revokeObjectURL(uploadUrlRef.current);
@@ -270,25 +281,31 @@ export function MemeGenerator() {
 
   return (
     <main className="studio-page">
-      <header className="studio-header">
-        <div className="studio-title">
-          <span className="studio-title-icon"><ImagePlus size={19} /></span>
-          <div>
-            <h1>表情包生成器</h1>
-            {templateImage && <p>{templateImage.naturalWidth} × {templateImage.naturalHeight}</p>}
+      <header className="flex min-h-[76px] items-center justify-between gap-4 border-b">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+            <ImagePlus size={19} />
+          </span>
+          <div className="min-w-0">
+            <h1 className="m-0 text-lg leading-tight font-bold text-foreground">表情包生成器</h1>
+            {templateImage && (
+              <p className="mt-1 text-[11px] text-muted-foreground tabular-nums">
+                {templateImage.naturalWidth} × {templateImage.naturalHeight}
+              </p>
+            )}
           </div>
         </div>
-        <div className="studio-header-actions">
-          <button type="button" className="studio-icon-button studio-reset-button" title="恢复默认设置" aria-label="恢复默认设置" onClick={resetEditor}>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" title="恢复默认设置" aria-label="恢复默认设置" onClick={resetEditor}>
             <RotateCcw size={17} />
-          </button>
-          <button type="button" className="studio-copy-button" disabled={!templateImage} onClick={() => void copyImage()}>
-            <Copy size={17} />
+          </Button>
+          <Button size="sm" className="font-bold" disabled={!templateImage} onClick={() => void copyImage()}>
+            <Copy size={16} />
             复制图片
-          </button>
-          <button type="button" className="studio-icon-button" title="下载 PNG" aria-label="下载 PNG" disabled={!templateImage} onClick={() => void download()}>
+          </Button>
+          <Button variant="outline" size="icon" title="下载 PNG" aria-label="下载 PNG" disabled={!templateImage} onClick={() => void download()}>
             <Download size={17} />
-          </button>
+          </Button>
         </div>
       </header>
 
@@ -339,62 +356,108 @@ export function MemeGenerator() {
 
         <aside className="studio-inspector" aria-label="编辑选项">
           <section className="studio-panel-section">
-            <div className="studio-section-title"><h2>模板</h2><span>{templateIndex + 1} / {memeTemplates.length}</span></div>
-            <div className="studio-template-list">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="m-0 text-[13px] font-bold text-foreground">模板</h2>
+              <span className="text-[11px] text-muted-foreground tabular-nums">{templateIndex + 1} / {memeTemplates.length}</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
               {memeTemplates.map((item, index) => (
                 <button
                   key={item.id}
                   type="button"
-                  className="studio-template-button"
+                  className={cn(
+                    'relative min-w-0 cursor-pointer overflow-hidden rounded-lg border bg-card p-0 transition-shadow',
+                    index === templateIndex
+                      ? 'border-primary ring-2 ring-primary/25'
+                      : 'border-input hover:border-primary/40',
+                  )}
                   data-active={index === templateIndex}
                   aria-label={`选择模板 ${index + 1}`}
                   aria-pressed={index === templateIndex}
                   onClick={() => setTemplateIndex(index)}
                 >
-                  <img src={item.source} crossOrigin="anonymous" alt="" />
-                  {index === templateIndex && <Check size={15} />}
+                  <img src={item.source} crossOrigin="anonymous" alt="" className="block w-full object-cover" style={{ aspectRatio: '1.3' }} />
+                  {index === templateIndex && (
+                    <span className="absolute top-1.5 right-1.5 grid size-[18px] place-items-center rounded-full bg-primary text-primary-foreground">
+                      <Check size={12} strokeWidth={3} />
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
           </section>
 
-          <section className="studio-panel-section studio-content-section">
-            <div className="studio-section-title"><h2>内容</h2></div>
-            <div className="studio-mode-switch" role="group" aria-label="内容类型">
-              <button type="button" data-active={editor.mode === 'text'} onClick={() => patchEditor({ mode: 'text' })}><Type size={16} />文字</button>
-              <button type="button" data-active={editor.mode === 'image'} onClick={() => patchEditor({ mode: 'image' })}><ImagePlus size={16} />图片</button>
+          <section className="studio-panel-section">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="m-0 text-[13px] font-bold text-foreground">内容</h2>
             </div>
+            <Tabs value={editor.mode} onValueChange={(mode) => patchEditor({ mode: mode as MemeEditorState['mode'] })}>
+              <TabsList className="mb-4 grid w-full grid-cols-2">
+                <TabsTrigger value="text"><Type size={15} />文字</TabsTrigger>
+                <TabsTrigger value="image"><ImagePlus size={15} />图片</TabsTrigger>
+              </TabsList>
+            </Tabs>
 
             {editor.mode === 'text' ? (
-              <div className="studio-fields">
-                <label className="studio-text-field">
-                  <span><span>文字</span><output>{editor.text.length} / 160</output></span>
-                  <textarea rows={4} maxLength={160} value={editor.text} onChange={(event) => patchEditor({ text: event.target.value })} />
-                </label>
+              <div className="flex flex-col gap-4">
+                <div className="flex min-w-0 flex-col gap-2">
+                  <span className="flex items-center justify-between text-xs font-semibold text-secondary-foreground">
+                    <span>文字</span>
+                    <output className="text-primary tabular-nums">{editor.text.length} / 160</output>
+                  </span>
+                  <Textarea
+                    rows={4}
+                    maxLength={160}
+                    value={editor.text}
+                    onChange={(event) => patchEditor({ text: event.target.value })}
+                    className="min-h-24 field-sizing-fixed"
+                  />
+                </div>
                 <RangeField label="字号" value={editor.fontSize} display={`${editor.fontSize}px`} min={18} max={96} onChange={(fontSize) => patchEditor({ fontSize })} />
                 <RangeField label="行距" value={editor.lineHeight} display={editor.lineHeight.toFixed(2)} min={1} max={1.8} step={0.02} onChange={(lineHeight) => patchEditor({ lineHeight })} />
-                <div className="studio-field-row">
-                  <div className="studio-icon-segments" role="group" aria-label="文字对齐">
-                    <button type="button" title="左对齐" aria-label="左对齐" data-active={editor.align === 'left'} onClick={() => patchEditor({ align: 'left' })}><AlignLeft size={17} /></button>
-                    <button type="button" title="居中" aria-label="居中" data-active={editor.align === 'center'} onClick={() => patchEditor({ align: 'center' })}><AlignCenter size={17} /></button>
-                    <button type="button" title="右对齐" aria-label="右对齐" data-active={editor.align === 'right'} onClick={() => patchEditor({ align: 'right' })}><AlignRight size={17} /></button>
-                  </div>
-                  <label className="studio-color-field" title="文字颜色">
+                <div className="flex items-center justify-between gap-3">
+                  <ToggleGroup
+                    type="single"
+                    value={editor.align}
+                    onValueChange={(align) => { if (align) patchEditor({ align: align as MemeEditorState['align'] }); }}
+                    aria-label="文字对齐"
+                  >
+                    <ToggleGroupItem value="left" title="左对齐" aria-label="左对齐"><AlignLeft size={16} /></ToggleGroupItem>
+                    <ToggleGroupItem value="center" title="居中" aria-label="居中"><AlignCenter size={16} /></ToggleGroupItem>
+                    <ToggleGroupItem value="right" title="右对齐" aria-label="右对齐"><AlignRight size={16} /></ToggleGroupItem>
+                  </ToggleGroup>
+                  <label className="flex items-center gap-2 text-xs font-semibold text-secondary-foreground" title="文字颜色">
                     <span>颜色</span>
-                    <input type="color" value={editor.textColor} onChange={(event) => patchEditor({ textColor: event.target.value })} />
+                    <input
+                      type="color"
+                      className="size-8 cursor-pointer rounded-md border border-input bg-background p-0.5"
+                      value={editor.textColor}
+                      onChange={(event) => patchEditor({ textColor: event.target.value })}
+                    />
                   </label>
                 </div>
                 <RangeField label="水平位置" value={editor.textOffsetX} display={`${editor.textOffsetX > 0 ? '+' : ''}${editor.textOffsetX}`} min={-50} max={50} onChange={(textOffsetX) => patchEditor({ textOffsetX })} />
                 <RangeField label="垂直位置" value={editor.textOffsetY} display={`${editor.textOffsetY > 0 ? '+' : ''}${editor.textOffsetY}`} min={-50} max={50} onChange={(textOffsetY) => patchEditor({ textOffsetY })} />
-                <div className="studio-toggle-list">
-                  <label><span>自动适配</span><input type="checkbox" checked={editor.autoFit} onChange={(event) => patchEditor({ autoFit: event.target.checked })} /></label>
-                  <label><span>白色描边</span><input type="checkbox" checked={editor.outline} onChange={(event) => patchEditor({ outline: event.target.checked })} /></label>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="flex items-center justify-between gap-2 text-xs font-semibold text-secondary-foreground">
+                    <span>自动适配</span>
+                    <Switch checked={editor.autoFit} onCheckedChange={(autoFit) => patchEditor({ autoFit })} />
+                  </label>
+                  <label className="flex items-center justify-between gap-2 text-xs font-semibold text-secondary-foreground">
+                    <span>白色描边</span>
+                    <Switch checked={editor.outline} onCheckedChange={(outline) => patchEditor({ outline })} />
+                  </label>
                 </div>
               </div>
             ) : (
-              <div className="studio-fields">
+              <div className="flex flex-col gap-4">
                 <label
-                  className="studio-dropzone"
+                  className={cn(
+                    'flex min-h-16 cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg border border-dashed p-2.5 text-[13px] font-bold transition-colors',
+                    isDraggingFile
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-input bg-muted/40 text-primary hover:border-primary/50 hover:bg-primary/5',
+                  )}
                   data-dragging={isDraggingFile}
                   onDragEnter={() => setIsDraggingFile(true)}
                   onDragLeave={() => setIsDraggingFile(false)}
@@ -402,16 +465,25 @@ export function MemeGenerator() {
                   onDrop={dropOverlay}
                 >
                   <Upload size={19} />
-                  <span>{overlayName || '选择图片'}</span>
-                  <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={uploadOverlay} />
+                  <span className="overflow-hidden text-ellipsis whitespace-nowrap">{overlayName || '选择图片'}</span>
+                  <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="sr-only" onChange={uploadOverlay} />
                 </label>
                 {overlayImage && (
-                  <button type="button" className="studio-clear-image" onClick={clearOverlay}><Trash2 size={15} />移除图片</button>
+                  <Button variant="secondary" size="sm" className="self-start" onClick={clearOverlay}>
+                    <Trash2 size={15} />
+                    移除图片
+                  </Button>
                 )}
-                <div className="studio-fit-switch" role="group" aria-label="图片填充方式">
-                  <button type="button" data-active={editor.imageFit === 'contain'} onClick={() => patchEditor({ imageFit: 'contain' })}>适应</button>
-                  <button type="button" data-active={editor.imageFit === 'cover'} onClick={() => patchEditor({ imageFit: 'cover' })}>填满</button>
-                </div>
+                <ToggleGroup
+                  type="single"
+                  value={editor.imageFit}
+                  onValueChange={(fit) => { if (fit) patchEditor({ imageFit: fit as MemeEditorState['imageFit'] }); }}
+                  className="w-full"
+                  aria-label="图片填充方式"
+                >
+                  <ToggleGroupItem value="contain" className="flex-1">适应</ToggleGroupItem>
+                  <ToggleGroupItem value="cover" className="flex-1">填满</ToggleGroupItem>
+                </ToggleGroup>
                 <RangeField label="缩放" value={editor.imageScale} display={`${editor.imageScale}%`} min={40} max={240} onChange={(imageScale) => patchEditor({ imageScale })} />
                 <RangeField label="水平位置" value={Math.round(editor.imageOffsetX)} min={-100} max={100} onChange={(imageOffsetX) => patchEditor({ imageOffsetX })} />
                 <RangeField label="垂直位置" value={Math.round(editor.imageOffsetY)} min={-100} max={100} onChange={(imageOffsetY) => patchEditor({ imageOffsetY })} />
@@ -419,10 +491,13 @@ export function MemeGenerator() {
             )}
           </section>
 
-          <section className="studio-panel-section studio-surface-section">
-            <label className="studio-surface-toggle">
-              <span><strong>白色气泡底</strong><small>覆盖模板原有内容</small></span>
-              <input type="checkbox" checked={editor.clearBubble} onChange={(event) => patchEditor({ clearBubble: event.target.checked })} />
+          <section className="studio-panel-section">
+            <label className="flex items-center justify-between gap-4">
+              <span className="min-w-0">
+                <strong className="block text-[13px] font-semibold text-foreground">白色气泡底</strong>
+                <small className="mt-0.5 block text-[11px] text-muted-foreground">覆盖模板原有内容</small>
+              </span>
+              <Switch checked={editor.clearBubble} onCheckedChange={(clearBubble) => patchEditor({ clearBubble })} />
             </label>
           </section>
         </aside>

@@ -22,11 +22,11 @@ const breakpointColumns = {
 function MemeTile({ item, categoryName, priority, onOpen }: { item: GalleryItem; categoryName: string; priority: boolean; onOpen: () => void }) {
   const [failed, setFailed] = useState(false);
   return (
-    <article className="meme-card group">
-      <button type="button" className="block w-full text-left" onClick={onOpen} aria-label={`预览 ${categoryName} 表情`}>
-        <span className="relative block overflow-hidden bg-zinc-100 dark:bg-zinc-900" style={{ aspectRatio: `${item.width} / ${item.height}` }}>
+    <article className="group mb-3 overflow-hidden rounded-xl border bg-card shadow-xs transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg focus-within:border-primary/40 focus-within:shadow-lg sm:mb-3">
+      <button type="button" className="block w-full cursor-pointer text-left outline-none" onClick={onOpen} aria-label={`预览 ${categoryName} 表情`}>
+        <span className="relative block overflow-hidden rounded-t-[calc(var(--radius-xl)-1px)] bg-muted" style={{ aspectRatio: `${item.width} / ${item.height}` }}>
           {failed ? (
-            <span className="absolute inset-0 grid place-items-center text-zinc-400"><ImageOff size={22} /></span>
+            <span className="absolute inset-0 grid place-items-center text-muted-foreground"><ImageOff size={22} /></span>
           ) : (
             <img
               src={assetUrl(item.thumb, item.revision)}
@@ -35,7 +35,7 @@ function MemeTile({ item, categoryName, priority, onOpen }: { item: GalleryItem;
               height={item.height}
               loading={priority ? 'eager' : 'lazy'}
               decoding="async"
-              className="h-full w-full object-cover transition duration-300 ease-out group-hover:scale-[1.025]"
+              className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.025]"
               onError={() => setFailed(true)}
             />
           )}

@@ -3,14 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- 默认主题为暗色；本地保存过浅色偏好时在首帧绘制前纠正。 -->
-    <meta name="theme-color" content="#111516" />
+    <!-- 默认主题为暗色；首帧绘制前同步 html.dark 与 theme-color，避免浅色偏好用户看到暗色闪烁。 -->
+    <meta name="theme-color" content="#171a1b" />
     <script>
       try {
-        if (localStorage.getItem('meme-share-theme') === 'light') {
+        if (localStorage.getItem('meme-share-theme') !== 'light') {
+          document.documentElement.classList.add('dark');
+        } else {
           document
             .querySelector('meta[name="theme-color"]')
-            ?.setAttribute('content', '#f7f8f8');
+            ?.setAttribute('content', '#f6f8f8');
         }
       } catch (error) {}
     </script>

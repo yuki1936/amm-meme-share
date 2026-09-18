@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import { ChevronLeft, ChevronRight, Copy, Download, Link, LoaderCircle, Maximize2, Minus, Plus, X } from 'lucide-react';
 import { assetUrl, copyItem, copyPageLink, downloadItem } from '../lib/gallery';
 import type { GalleryCategory, GalleryItem } from '../types';
@@ -17,11 +17,14 @@ const FIT_ZOOM = 1;
 const MAX_ZOOM = 5;
 const ZOOM_STEP = 0.25;
 
+const FOCUSABLE_SELECTOR = 'button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
+
 export function Viewer({ category, item, index, onClose, onNavigate, notify }: ViewerProps) {
   const [loading, setLoading] = useState(true);
   const [zoom, setZoom] = useState(FIT_ZOOM);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
+  const layerRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const canvasRef = useRef<HTMLElement>(null);
   const zoomRef = useRef(FIT_ZOOM);
@@ -44,6 +47,7 @@ export function Viewer({ category, item, index, onClose, onNavigate, notify }: V
       if (event.key === 'Escape') onClose();
       if (event.key === 'ArrowLeft') onNavigate(-1);
       if (event.key === 'ArrowRight') onNavigate(1);
+      if (event.key === 'Tab') trapFocus(event);
     };
     window.addEventListener('keydown', onKeyDown);
     return () => {
@@ -51,6 +55,22 @@ export function Viewer({ category, item, index, onClose, onNavigate, notify }: V
       window.removeEventListener('keydown', onKeyDown);
     };
   }, [onClose, onNavigate]);
+
+  // 灯箱是全屏模态层，Tab 焦点必须锁在其中，否则键盘用户会落到被遮住的背景元素上。
+  const trapFocus = (event: KeyboardEvent | ReactKeyboardEvent) => {
+    const focusables = layerRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+    if (!focusables?.length) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    const active = document.activeElement;
+    if (event.shiftKey && (active === first || active === layerRef.current)) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && active === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
 
   // React 会把 onWheel 注册为 passive，preventDefault 无效，这里改用原生非 passive 监听。
   useEffect(() => {
@@ -161,25 +181,35 @@ export function Viewer({ category, item, index, onClose, onNavigate, notify }: V
     }
   };
 
+  const toolButton = 'inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-md border border-white/15 bg-white/5 text-zinc-200 transition-colors hover:border-white/30 hover:bg-white/12 hover:text-white disabled:pointer-events-none disabled:opacity-35';
+
   return (
-    <div className="viewer-layer" role="dialog" aria-modal="true" aria-label="图片预览" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <header className="viewer-toolbar">
+    <div
+      ref={layerRef}
+      className="viewer-layer"
+      role="dialog"
+      aria-modal="true"
+      aria-label="图片预览"
+      tabIndex={-1}
+      onMouseDown={(event) => event.target === event.currentTarget && onClose()}
+    >
+      <header className="viewer-toolbar flex items-center justify-between gap-4 border-b border-white/10 px-3 pb-0 pl-5 sm:pl-5" style={{ background: 'oklch(0.16 0.005 220 / 94%)' }}>
         <div className="viewer-meta min-w-0">
           <strong className="block truncate text-sm font-semibold text-white">{category.name}</strong>
           <span className="mt-0.5 block text-[11px] text-zinc-400 tabular-nums">{index + 1} / {category.count}</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <button type="button" className="viewer-icon-button" title="缩小" aria-label="缩小" disabled={zoom <= MIN_ZOOM} onClick={() => applyZoom(zoom - ZOOM_STEP)}><Minus size={18} /></button>
-          <button type="button" className="viewer-icon-button" title="适应窗口" aria-label="适应窗口" disabled={Math.abs(zoom - FIT_ZOOM) < 0.001} onClick={resetView}><Maximize2 size={17} /></button>
-          <button type="button" className="viewer-icon-button" title="放大" aria-label="放大" disabled={zoom >= MAX_ZOOM} onClick={() => applyZoom(zoom + ZOOM_STEP)}><Plus size={18} /></button>
-          <button type="button" className="viewer-icon-button" title="复制图片" aria-label="复制图片" onClick={handleCopy}><Copy size={18} /></button>
-          <button type="button" className="viewer-icon-button" title="复制页面链接" aria-label="复制页面链接" onClick={handleCopyLink}><Link size={18} /></button>
-          <button type="button" className="viewer-icon-button" title="下载原图" aria-label="下载原图" onClick={handleDownload}><Download size={18} /></button>
-          <button ref={closeRef} type="button" className="viewer-icon-button" title="关闭" aria-label="关闭" onClick={onClose}><X size={20} /></button>
+          <button type="button" className={toolButton} title="缩小" aria-label="缩小" disabled={zoom <= MIN_ZOOM} onClick={() => applyZoom(zoom - ZOOM_STEP)}><Minus size={18} /></button>
+          <button type="button" className={toolButton} title="适应窗口" aria-label="适应窗口" disabled={Math.abs(zoom - FIT_ZOOM) < 0.001} onClick={resetView}><Maximize2 size={17} /></button>
+          <button type="button" className={toolButton} title="放大" aria-label="放大" disabled={zoom >= MAX_ZOOM} onClick={() => applyZoom(zoom + ZOOM_STEP)}><Plus size={18} /></button>
+          <button type="button" className={toolButton} title="复制图片" aria-label="复制图片" onClick={handleCopy}><Copy size={18} /></button>
+          <button type="button" className={toolButton} title="复制页面链接" aria-label="复制页面链接" onClick={handleCopyLink}><Link size={18} /></button>
+          <button type="button" className={toolButton} title="下载原图" aria-label="下载原图" onClick={handleDownload}><Download size={18} /></button>
+          <button ref={closeRef} type="button" className={toolButton} title="关闭" aria-label="关闭" onClick={onClose}><X size={20} /></button>
         </div>
       </header>
 
-      <button type="button" className="viewer-nav viewer-nav-left" title="上一张" aria-label="上一张" onClick={() => onNavigate(-1)}><ChevronLeft size={28} /></button>
+      <button type="button" className="viewer-nav viewer-nav-left cursor-pointer" title="上一张" aria-label="上一张" onClick={() => onNavigate(-1)}><ChevronLeft size={28} /></button>
       <figure
         ref={canvasRef}
         className={`viewer-canvas ${zoom > FIT_ZOOM ? dragging ? 'is-dragging' : 'is-zoomed' : ''}`}
@@ -205,7 +235,7 @@ export function Viewer({ category, item, index, onClose, onNavigate, notify }: V
           />
         </div>
       </figure>
-      <button type="button" className="viewer-nav viewer-nav-right" title="下一张" aria-label="下一张" onClick={() => onNavigate(1)}><ChevronRight size={28} /></button>
+      <button type="button" className="viewer-nav viewer-nav-right cursor-pointer" title="下一张" aria-label="下一张" onClick={() => onNavigate(1)}><ChevronRight size={28} /></button>
     </div>
   );
 }
